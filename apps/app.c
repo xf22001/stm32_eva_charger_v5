@@ -26,11 +26,11 @@
 #include "test_event.h"
 #include "file_log.h"
 #include "uart_debug.h"
+#include "probe_tool.h"
 #include "net_client.h"
 #include "ftp_client.h"
 #include "usb_upgrade.h"
 
-#define LOG_NONE
 #include "log.h"
 
 #include "channels_config.h"
@@ -87,6 +87,7 @@ void app(void const *argument)
 
 	poll_loop_t *poll_loop;
 	add_log_handler((log_fn_t)log_uart_data);
+	add_log_handler((log_fn_t)log_udp_data);
 	add_log_handler((log_fn_t)log_file_data);
 
 	{
@@ -118,10 +119,14 @@ void app(void const *argument)
 
 	poll_loop = get_or_alloc_poll_loop(0);
 	OS_ASSERT(poll_loop != NULL);
-
-	//net_client_add_poll_loop(poll_loop);
+	probe_broadcast_add_poll_loop(poll_loop);
+	probe_server_add_poll_loop(poll_loop);
+	net_client_add_poll_loop(poll_loop);
 	ftp_client_add_poll_loop(poll_loop);
 
+	while(is_log_server_valid() == 0) {
+		osDelay(1);
+	}
 
 	debug("===========================================start app============================================");
 
@@ -157,25 +162,25 @@ void app(void const *argument)
 
 	//test_event();
 
-	//{
-	//	channels_config_t *channels_config;
-	//	channels_info_t *channels_info;
-	//	osThreadDef(channels, task_channels, osPriorityNormal, 0, 128 * 2 * 2);
+	{
+		channels_config_t *channels_config;
+		channels_info_t *channels_info;
+		osThreadDef(channels, task_channels, osPriorityNormal, 0, 128 * 2 * 2);
 
-	//	channels_config = get_channels_config(0);
+		channels_config = get_channels_config(0);
 
-	//	if(channels_config == NULL) {
-	//		app_panic();
-	//	}
+		if(channels_config == NULL) {
+			app_panic();
+		}
 
-	//	channels_info = get_or_alloc_channels_info(channels_config);
+		channels_info = get_or_alloc_channels_info(channels_config);
 
-	//	if(channels_info == NULL) {
-	//		app_panic();
-	//	}
+		if(channels_info == NULL) {
+			app_panic();
+		}
 
-	//	osThreadCreate(osThread(channels), channels_info);
-	//}
+		osThreadCreate(osThread(channels), channels_info);
+	}
 
 	while(1) {
 		uint32_t event;

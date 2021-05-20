@@ -6,7 +6,7 @@
  *   文件名称：wiznet_spi.c
  *   创 建 者：肖飞
  *   创建日期：2021年05月19日 星期三 09时47分16秒
- *   修改日期：2021年05月20日 星期四 08时47分26秒
+ *   修改日期：2021年05月20日 星期四 11时03分49秒
  *   描    述：
  *
  *================================================================*/
@@ -78,3 +78,11 @@ void wiznet_spi_cs_deselect(void)
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 }
 
+void wiz_reset(void)
+{
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_RESET);
+	osDelay(2);
+
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_SET);
+	osDelay(2);
+}

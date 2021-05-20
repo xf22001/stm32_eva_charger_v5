@@ -67,31 +67,6 @@ b dummy_log
 
 b app_panic
 
-b wiznet_spi_cs_select
-	commands
-		c
-	end
-b wiznet_spi_cs_deselect
-	commands
-		c
-	end
-b wiznet_spi_write_byte
-	commands
-		c
-	end
-b wiznet_spi_read_byte
-	commands
-		c
-	end
-#b wiznet_spi_write_burst
-#	commands
-#		c
-#	end
-#b wiznet_spi_read_burst
-#	commands
-#		c
-#	end
-
 
 #monitor reset
 continue

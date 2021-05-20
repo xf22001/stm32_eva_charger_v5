@@ -47,6 +47,7 @@ USER_C_SOURCES += apps/early_sys_callback.c
 USER_C_SOURCES += apps/usbh_user_callback.c
 USER_C_SOURCES += apps/app.c
 USER_C_SOURCES += apps/uart_debug_handler.c
+USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
 USER_C_SOURCES += apps/can_config.c
 USER_C_SOURCES += apps/channels.c
@@ -67,6 +68,7 @@ USER_C_SOURCES += apps/modules/app/eeprom_config.c
 USER_C_SOURCES += apps/modules/app/poll_loop.c
 USER_C_SOURCES += apps/modules/app/uart_debug.c
 USER_C_SOURCES += apps/modules/app/file_log.c
+USER_C_SOURCES += apps/modules/app/probe_tool.c
 USER_C_SOURCES += apps/modules/app/request.c
 USER_C_SOURCES += apps/modules/app/net_client.c
 USER_C_SOURCES += apps/modules/app/net_protocol_udp.c
@@ -203,6 +205,8 @@ USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/xtea.c
 
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
 USER_CFLAGS += -DSAL_HOOK -DMBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"
+USER_CFLAGS += -DSAL_HOOK
+USER_CFLAGS += -DLOG_CONFIG_FILE=\"log_config.h\"
 
 C_SOURCES += $(USER_C_SOURCES)
 
