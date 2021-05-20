@@ -67,6 +67,5 @@ b dummy_log
 
 b app_panic
 
-
 #monitor reset
 continue
