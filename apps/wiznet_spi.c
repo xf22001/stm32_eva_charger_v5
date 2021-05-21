@@ -6,12 +6,15 @@
  *   文件名称：wiznet_spi.c
  *   创 建 者：肖飞
  *   创建日期：2021年05月19日 星期三 09时47分16秒
- *   修改日期：2021年05月20日 星期四 11时03分49秒
+ *   修改日期：2021年05月21日 星期五 10时15分39秒
  *   描    述：
  *
  *================================================================*/
 #include "app_platform.h"
 #include "cmsis_os.h"
+
+#include <wizchip_socket.h>
+#include "DHCP/wizchip_dhcp.h"
 
 #include "os_utils.h"
 #include "spi_txrx.h"
@@ -85,4 +88,27 @@ void wiz_reset(void)
 
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_11, GPIO_PIN_SET);
 	osDelay(2);
+}
+
+extern uint8_t DHCP_allocated_ip[4];
+extern uint8_t DHCP_SOCKET;
+int8_t check_DHCP_leasedIP(void)
+{
+	uint8_t tmp;
+	int32_t ret;
+
+	//WIZchip RCR value changed for ARP Timeout count control
+	tmp = getRCR();
+	setRCR(0x03);
+
+	// IP conflict detection : ARP request - ARP reply
+	// Broadcasting ARP Request for check the IP conflict using UDP sendto() function
+	ret = wizchip_sendto(DHCP_SOCKET, (uint8_t *)"CHECK_IP_CONFLICT", 17, DHCP_allocated_ip, 5000);
+
+	ret = ret;
+
+	// RCR value restore
+	setRCR(tmp);
+
+	return 1;
 }
