@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年05月20日 星期四 16时40分52秒
+ *   修改日期：2021年05月24日 星期一 12时43分57秒
  *   描    述：
  *
  *================================================================*/
@@ -90,6 +90,10 @@ void app(void const *argument)
 	add_log_handler((log_fn_t)log_udp_data);
 	add_log_handler((log_fn_t)log_file_data);
 
+	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
+	OS_ASSERT(app_info != NULL);
+
+
 	{
 		uart_info_t *uart_info = get_or_alloc_uart_info(&huart4);
 
@@ -124,15 +128,12 @@ void app(void const *argument)
 	net_client_add_poll_loop(poll_loop);
 	ftp_client_add_poll_loop(poll_loop);
 
-	while(is_log_server_valid() == 0) {
-		osDelay(1);
-	}
+	//while(is_log_server_valid() == 0) {
+	//	osDelay(1);
+	//}
 
 	debug("===========================================start app============================================");
 
-	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
-
-	OS_ASSERT(app_info != NULL);
 	snprintf(app_info->mechine.device_id, sizeof(app_info->mechine.device_id), "%s", "0000000000");
 	snprintf(app_info->mechine.host, sizeof(app_info->mechine.host), "%s", "10.42.0.1");
 	snprintf(app_info->mechine.port, sizeof(app_info->mechine.port), "%s", "6003");
