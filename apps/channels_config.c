@@ -119,6 +119,13 @@ static channels_config_t channels_config_0 = {
 		.hcan_power = NULL,
 		.channels_power_module_type = CHANNELS_POWER_MODULE_TYPE_NONE,
 	},
+	.voice_config = {
+
+	},
+	.card_reader_config = {
+		.card_reader_type = CARD_READER_TYPE_ZLG,
+		.huart_card_reader = NULL,
+	},
 };
 
 static channels_config_t *channels_config_sz[] = {
