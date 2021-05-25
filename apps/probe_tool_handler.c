@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2021年05月24日 星期一 13时31分18秒
+ *   修改日期：2021年05月25日 星期二 16时32分27秒
  *   描    述：
  *
  *================================================================*/
@@ -243,7 +243,7 @@ extern request_callback_t request_callback_default;
 static void fn6(request_t *request)
 {
 	char *content = (char *)(request + 1);
-	char *protocol = (char *)os_alloc(RECV_BUFFER_SIZE);
+	char protocol[8];
 	int fn;
 	int catched;
 	int ret = 0;
@@ -255,7 +255,7 @@ static void fn6(request_t *request)
 
 	set_client_state(net_client_info, CLIENT_SUSPEND);
 
-	ret = sscanf(content, "%d %s%n", &fn, protocol, &catched);
+	ret = sscanf(content, "%d %3s%n", &fn, protocol, &catched);
 
 	if(ret == 2) {
 		_printf("protocol:%s!\n", protocol);
