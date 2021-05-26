@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2021年05月21日 星期五 10时15分55秒
+#   修改日期：2021年05月26日 星期三 08时37分58秒
 #   描    述：
 #
 #================================================================
@@ -37,9 +37,6 @@ USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include/compat/posix/net
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include/compat/posix/sys
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include/compat/stdc
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/system/arch
-
-USER_C_INCLUDES += -IMiddlewares/Third_Party/mbedTLS/include/mbedtls
-USER_C_INCLUDES += -IMiddlewares/Third_Party/mbedTLS/include
 
 C_INCLUDES += $(USER_C_INCLUDES)
 
@@ -126,89 +123,9 @@ USER_C_SOURCES += apps/modules/tests/test_event.c
 
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
-
-USER_C_SOURCES += Src/mbedtls.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/aes.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/aesni.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/arc4.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/aria.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/asn1parse.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/asn1write.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/base64.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/bignum.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/blowfish.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/camellia.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ccm.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/certs.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/chacha20.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/chachapoly.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/cipher.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/cipher_wrap.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/cmac.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ctr_drbg.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/debug.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/des.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/dhm.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ecdh.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ecdsa.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ecjpake.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ecp.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ecp_curves.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/entropy.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/entropy_poll.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/error.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/gcm.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/havege.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/hkdf.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/hmac_drbg.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/md.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/md2.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/md4.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/md5.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/md_wrap.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/memory_buffer_alloc.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/nist_kw.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/oid.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/padlock.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pem.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pk.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pkcs11.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pkcs12.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pkcs5.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pkparse.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pkwrite.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/pk_wrap.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/platform.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/platform_util.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/poly1305.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ripemd160.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/rsa.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/rsa_internal.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/sha1.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/sha256.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/sha512.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_cache.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_ciphersuites.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_cli.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_cookie.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_srv.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_ticket.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/ssl_tls.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/threading.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/timing.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/version.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/version_features.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509write_crt.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509write_csr.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509_create.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509_crl.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509_crt.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/x509_csr.c
-USER_C_SOURCES += Middlewares/Third_Party/mbedTLS/library/xtea.c
+USER_C_SOURCES += Src/net_sockets.c
 
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
-USER_CFLAGS += -DSAL_HOOK -DMBEDTLS_CONFIG_FILE=\"mbedtls_config.h\"
 USER_CFLAGS += -DSAL_HOOK
 USER_CFLAGS += -DLOG_CONFIG_FILE=\"log_config.h\"
 

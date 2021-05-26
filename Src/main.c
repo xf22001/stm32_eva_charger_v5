@@ -25,6 +25,8 @@
 #include "dma.h"
 #include "fatfs.h"
 #include "i2c.h"
+#include "mbedtls.h"
+#include "rng.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -128,6 +130,8 @@ int main(void)
   MX_USART6_UART_Init();
   MX_FATFS_Init();
   MX_ADC1_Init();
+  MX_RNG_Init();
+  MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
