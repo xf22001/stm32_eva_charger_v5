@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年05月24日 星期一 13时36分11秒
+ *   修改日期：2021年05月28日 星期五 16时20分47秒
  *   描    述：
  *
  *================================================================*/
@@ -33,7 +33,6 @@
 
 #include "log.h"
 
-#include "channels_config.h"
 #include "channels.h"
 #include "duty_cycle_pattern.h"
 
@@ -177,25 +176,7 @@ void app(void const *argument)
 
 	//test_event();
 
-	{
-		channels_config_t *channels_config;
-		channels_info_t *channels_info;
-		osThreadDef(channels, task_channels, osPriorityNormal, 0, 128 * 2 * 2);
-
-		channels_config = get_channels_config(0);
-
-		if(channels_config == NULL) {
-			app_panic();
-		}
-
-		channels_info = get_or_alloc_channels_info(channels_config);
-
-		if(channels_info == NULL) {
-			app_panic();
-		}
-
-		osThreadCreate(osThread(channels), channels_info);
-	}
+	start_channels();
 
 	while(1) {
 		uint32_t event;
