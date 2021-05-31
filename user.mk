@@ -97,6 +97,7 @@ USER_C_SOURCES += apps/modules/app/charger/channels_power_module.c
 USER_C_SOURCES += apps/modules/app/charger/channels_power_module_native.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc_native.c
+USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_native.c
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
