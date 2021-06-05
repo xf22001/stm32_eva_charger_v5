@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2021年05月27日 星期四 11时28分08秒
+#   修改日期：2021年06月05日 星期六 13时13分56秒
 #   描    述：
 #
 #================================================================
@@ -63,6 +63,7 @@ USER_C_SOURCES += apps/modules/app/net_protocol_ws.c
 USER_C_SOURCES += apps/modules/app/request_default.c
 USER_C_SOURCES += apps/modules/app/https.c
 USER_C_SOURCES += apps/modules/app/request_ws.c
+USER_C_SOURCES += apps/modules/app/request_sse.c
 USER_C_SOURCES += apps/modules/app/ftp_client.c
 USER_C_SOURCES += apps/modules/app/vfs_disk/vfs.c
 USER_C_SOURCES += apps/modules/app/mt_file.c
@@ -90,14 +91,13 @@ USER_C_SOURCES += apps/modules/app/charger/channel.c
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_dc.c
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_ac.c
 USER_C_SOURCES += apps/modules/app/charger/charger.c
-USER_C_SOURCES += apps/modules/app/charger/charger_handler_bms_native.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
 USER_C_SOURCES += apps/modules/app/charger/channels_power_module.c
 USER_C_SOURCES += apps/modules/app/charger/channels_power_module_native.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter.c
-USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc_native.c
-USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_native.c
+USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc.c
+USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac.c
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
