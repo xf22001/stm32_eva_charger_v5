@@ -41,12 +41,9 @@ char *get_channel_config_charger_type(channel_charger_type_t type)
 
 	switch(type) {
 			add_des_case(CHANNEL_CHARGER_TYPE_NONE);
-			add_des_case(CHANNEL_CHARGER_TYPE_BMS_NATIVE);
+			add_des_case(CHANNEL_CHARGER_TYPE_BMS_GB);
 			add_des_case(CHANNEL_CHARGER_TYPE_BMS_PROXY);
-			add_des_case(CHANNEL_CHARGER_TYPE_BMS_PROXY_AND_NATIVE);
-			add_des_case(CHANNEL_CHARGER_TYPE_AC_NATIVE);
-			add_des_case(CHANNEL_CHARGER_TYPE_AC_PROXY);
-			add_des_case(CHANNEL_CHARGER_TYPE_AC_PROXY_AND_NATIVE);
+			add_des_case(CHANNEL_CHARGER_TYPE_BMS_PROXY_AND_GB);
 
 		default: {
 		}
@@ -80,8 +77,7 @@ char *get_channel_config_energy_meter_type(channel_energy_meter_type_t type)
 static channel_config_t channel0_config = {
 	.channel_type = CHANNEL_TYPE_AC,
 	.charger_config = {
-		.charger_type = CHANNEL_CHARGER_TYPE_AC_NATIVE,
-		.charger_bms_type = CHANNEL_CHARGER_BMS_TYPE_NONE,
+		.channel_charger_type = CHANNEL_CHARGER_TYPE_NONE,
 		.hcan_bms = NULL,
 	},
 	.energy_meter_config = {
@@ -93,8 +89,7 @@ static channel_config_t channel0_config = {
 static channel_config_t channel1_config = {
 	.channel_type = CHANNEL_TYPE_AC,
 	.charger_config = {
-		.charger_type = CHANNEL_CHARGER_TYPE_AC_NATIVE,
-		.charger_bms_type = CHANNEL_CHARGER_BMS_TYPE_NONE,
+		.channel_charger_type = CHANNEL_CHARGER_TYPE_NONE,
 		.hcan_bms = NULL,
 	},
 	.energy_meter_config = {
