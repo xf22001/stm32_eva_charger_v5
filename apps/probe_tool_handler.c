@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2021年06月03日 星期四 12时55分00秒
+ *   修改日期：2021年06月11日 星期五 16时03分25秒
  *   描    述：
  *
  *================================================================*/
@@ -378,8 +378,8 @@ static void fn11(request_t *request)
 	set_client_state(net_client_info, CLIENT_REINIT);
 }
 
-//12 192.168.1.128 2121 /user.mk anonymous
-//12 192.168.1.128 2121 /user.mk user pass
+//12 10.42.0.1 2121 /user.mk anonymous
+//12 10.42.0.1 2121 /user.mk user pass
 //12 ftp.gnu.org 21 /gnu/tar/tar-1.32.tar.gz anonymous
 //12 ftp.sjtu.edu.cn 21 /centos/2/centos2-scripts-v1.tar anonymous
 static void fn12(request_t *request)
