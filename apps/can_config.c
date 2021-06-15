@@ -6,7 +6,7 @@
  *   文件名称：can_config.c
  *   创 建 者：肖飞
  *   创建日期：2020年04月17日 星期五 09时16分53秒
- *   修改日期：2021年06月15日 星期二 17时41分41秒
+ *   修改日期：2021年06月15日 星期二 20时24分30秒
  *   描    述：
  *
  *================================================================*/
@@ -19,7 +19,7 @@ extern CAN_HandleTypeDef hcan2;
 extern SPI_HandleTypeDef hspi3;
 
 can_config_t can_config_can1 = {
-	.type = CAN_TYPE_CAN,
+	.type = CAN_TYPE_HAL,
 	.hcan = &hcan1,
 	.config_can = &hcan1,
 	.filter_number = 0,
@@ -33,7 +33,7 @@ can_config_t can_config_can1 = {
 };
 
 can_config_t can_config_can2 = {
-	.type = CAN_TYPE_SPICAN,
+	.type = CAN_TYPE_SPI_CAN,
 	.hcan = &hspi3,
 	.config_can = NULL,
 	.tx_fifo = CAN_FIFO_CH2,
