@@ -23,6 +23,7 @@ USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/spi
 USER_C_INCLUDES += -Iapps/modules/hardware
 USER_C_INCLUDES += -Iapps/modules/app
 USER_C_INCLUDES += -Iapps/modules/app/charger
+USER_C_INCLUDES += -Iapps/modules/app/power_modules
 USER_C_INCLUDES += -Iapps/modules/app/vfs_disk
 USER_C_INCLUDES += -Iapps/modules/tests
 
@@ -76,32 +77,35 @@ USER_C_SOURCES += apps/modules/app/duty_cycle_pattern.c
 USER_C_SOURCES += apps/modules/app/usbh_user_callback.c
 USER_C_SOURCES += apps/modules/app/early_sys_callback.c
 USER_C_SOURCES += apps/modules/app/connect_state.c
-USER_C_SOURCES += apps/modules/app/power_modules.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_huawei.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_increase.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_infy.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_pseudo.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_stategrid.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_yyln.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_winline.c
-USER_C_SOURCES += apps/modules/app/power_modules_handler_zte.c
 USER_C_SOURCES += apps/modules/app/can_command.c
 USER_C_SOURCES += apps/modules/app/usb_upgrade.c
 USER_C_SOURCES += apps/modules/app/voice.c
 USER_C_SOURCES += apps/modules/app/ntc_temperature.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_huawei.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_increase.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_infy.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_pseudo.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_stategrid.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_yyln.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_winline.c
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_zte.c
 USER_C_SOURCES += apps/modules/app/charger/channels.c
 USER_C_SOURCES += apps/modules/app/charger/channel.c
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_dc.c
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_ac.c
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_proxy.c
+USER_C_SOURCES += apps/modules/app/charger/channel_record_handler.c
 USER_C_SOURCES += apps/modules/app/charger/charger.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_ac.c
 USER_C_SOURCES += apps/modules/app/charger/channels_power_module.c
 USER_C_SOURCES += apps/modules/app/charger/channels_power_module_native.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac.c
+USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_hlw8032.c
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
@@ -135,13 +139,13 @@ USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
 USER_C_SOURCES += Src/net_sockets.c
 
+C_SOURCES += $(USER_C_SOURCES)
+
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
 USER_CFLAGS += -DSAL_HOOK
 USER_CFLAGS += -DLOG_CONFIG_FILE=\"log_config.h\"
 #USER_CFLAGS += -DLOG_DISABLE
 #USER_CFLAGS += -DALLOC_TRACE_DISABLE
-
-C_SOURCES += $(USER_C_SOURCES)
 
 CFLAGS += $(USER_CFLAGS)
 LDFLAGS += -u _printf_float
