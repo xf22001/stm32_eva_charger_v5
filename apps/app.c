@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年05月28日 星期五 16时20分47秒
+ *   修改日期：2021年07月23日 星期五 11时42分39秒
  *   描    述：
  *
  *================================================================*/
@@ -40,6 +40,8 @@
 #include "sal_netdev.h"
 #include "sal_netdev.h"
 #include "wiz_ethernet.h"
+#include "display.h"
+#include "display_cache.h"
 
 //extern IWDG_HandleTypeDef hiwdg;
 //extern TIM_HandleTypeDef htim2;
@@ -54,15 +56,10 @@ app_info_t *get_app_info(void)
 	return app_info;
 }
 
-static int app_load_config(void)
+int app_load_config(void)
 {
 	eeprom_layout_t *eeprom_layout = get_eeprom_layout();
 	size_t offset = (size_t)&eeprom_layout->mechine_info_seg.eeprom_mechine_info.mechine_info;
-
-	if(app_info == NULL) {
-		return -1;
-	}
-
 	debug("offset:%d", offset);
 	return eeprom_load_config_item(app_info->eeprom_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
@@ -72,11 +69,6 @@ int app_save_config(void)
 	eeprom_layout_t *eeprom_layout = get_eeprom_layout();
 	size_t offset = (size_t)&eeprom_layout->mechine_info_seg.eeprom_mechine_info.mechine_info;
 	debug("offset:%d", offset);
-
-	if(app_info == NULL) {
-		return -1;
-	}
-
 	return eeprom_save_config_item(app_info->eeprom_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
 
@@ -90,13 +82,93 @@ void send_app_event(app_event_t event)
 	signal_send(app_event, event, 0);
 }
 
+static void app_mechine_info_invalid(void *fn_ctx, void *chain_ctx)
+{
+	app_info_t *app_info = (app_info_t *)fn_ctx;
+	modbus_data_ctx_t *modbus_data_ctx = (modbus_data_ctx_t *)chain_ctx;
+
+	if(modbus_data_ctx->influence < (void *)&app_info->mechine_info) {
+		return;
+	}
+
+	if(modbus_data_ctx->influence >= (void *)(&app_info->mechine_info + 1)) {
+		return;
+	}
+
+	debug("[%p, %p, %p]", &app_info->mechine_info, modbus_data_ctx->influence, &app_info->mechine_info + 1);
+
+	app_info->mechine_info_invalid = 1;
+}
+
+__weak void load_app_display_cache(app_info_t *app_info)
+{
+}
+
+__weak void sync_app_display_cache(app_info_t *app_info)
+{
+}
+
+static void app_mechine_info_changed(void *fn_ctx, void *chain_ctx)
+{
+	app_info_t *app_info = (app_info_t *)fn_ctx;
+
+	sync_app_display_cache(app_info);
+
+	if(app_info->mechine_info_invalid != 0) {
+		app_info->mechine_info_invalid = 0;
+		app_save_config();
+	}
+}
+
+void update_network_ip_config(app_info_t *app_info)
+{
+	int exit = 0;
+
+	while(exit == 0) {
+		if(set_dhcp_enable(app_info->mechine_info.dhcp_enable) != 0) {
+			debug("");
+			osDelay(1000);
+		} else {
+			if(app_info->mechine_info.dhcp_enable == 0) {
+				if(set_default_ipaddr(&app_info->mechine_info.ip) != 0) {
+					debug("");
+					osDelay(1000);
+					continue;
+				}
+
+				if(set_default_netmask(&app_info->mechine_info.sn) != 0) {
+					debug("");
+					osDelay(1000);
+					continue;
+				}
+
+				if(set_default_gw(&app_info->mechine_info.gw) != 0) {
+					debug("");
+					osDelay(1000);
+					continue;
+				}
+
+				if(set_default_dns_server(&app_info->mechine_info.gw) != 0) {
+					debug("");
+					osDelay(1000);
+					continue;
+				}
+			}
+
+			exit = 1;
+		}
+	}
+}
+
 void app(void const *argument)
 {
 
 	poll_loop_t *poll_loop;
-	add_log_handler((log_fn_t)log_uart_data);
+	channels_info_t *channels_info;
+
+	//add_log_handler((log_fn_t)log_uart_data);
 	add_log_handler((log_fn_t)log_udp_data);
-	add_log_handler((log_fn_t)log_file_data);
+	//add_log_handler((log_fn_t)log_file_data);
 
 	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
 	OS_ASSERT(app_info != NULL);
@@ -109,19 +181,6 @@ void app(void const *argument)
 	//OS_ASSERT(app_info->eeprom_info != NULL);
 
 
-
-	{
-		uart_info_t *uart_info = get_or_alloc_uart_info(&huart4);
-
-		if(uart_info == NULL) {
-			app_panic();
-		}
-
-		set_log_uart_info(uart_info);
-
-		osThreadDef(uart_debug, task_uart_debug, osPriorityNormal, 0, 128 * 2 * 2);
-		osThreadCreate(osThread(uart_debug), uart_info);
-	}
 
 	//{
 	//	uart_info_t *uart_info = get_or_alloc_uart_info(&huart4);
@@ -141,42 +200,42 @@ void app(void const *argument)
 	OS_ASSERT(poll_loop != NULL);
 	probe_broadcast_add_poll_loop(poll_loop);
 	probe_server_add_poll_loop(poll_loop);
-	net_client_add_poll_loop(poll_loop);
-	ftp_client_add_poll_loop(poll_loop);
 
-	//while(is_log_server_valid() == 0) {
-	//	osDelay(1);
-	//}
+	while(is_log_server_valid() == 0) {
+		osDelay(1);
+	}
 
 	debug("===========================================start app============================================");
 
-	snprintf(app_info->mechine_info.device_id, sizeof(app_info->mechine_info.device_id), "%s", "0000000000");
-	snprintf(app_info->mechine_info.host, sizeof(app_info->mechine_info.host), "%s", "10.42.0.1");
-	snprintf(app_info->mechine_info.port, sizeof(app_info->mechine_info.port), "%s", "6003");
-	snprintf(app_info->mechine_info.path, sizeof(app_info->mechine_info.path), "%s", "");
-	debug("device id:\'%s\', server host:\'%s\', server port:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.host, app_info->mechine_info.port);
-
 	//if(app_load_config() == 0) {
 	//	debug("app_load_config successful!");
-	//	debug("device id:\'%s\', server host:\'%s\', server port:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.host, app_info->mechine_info.port);
+	//	debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
+	//	load_app_display_cache(app_info);
 	//	app_info->available = 1;
 	//} else {
 	//	debug("app_load_config failed!");
 	//	snprintf(app_info->mechine_info.device_id, sizeof(app_info->mechine_info.device_id), "%s", "0000000000");
-	//	snprintf(app_info->mechine_info.host, sizeof(app_info->mechine_info.host), "%s", "112.74.40.227");
-	//	snprintf(app_info->mechine_info.port, sizeof(app_info->mechine_info.port), "%s", "12345");
-	//	snprintf(app_info->mechine_info.path, sizeof(app_info->mechine_info.path), "%s", "");
-	//	debug("device id:\'%s\', server host:\'%s\', server port:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.host, app_info->mechine_info.port);
+	//	snprintf(app_info->mechine_info.uri, sizeof(app_info->mechine_info.uri), "%s", "tcp://112.74.40.227:12345");
+	//	debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
+	//	IP4_ADDR(&app_info->mechine_info.ip, 10, 42, 0, 122);
+	//	IP4_ADDR(&app_info->mechine_info.sn, 255, 255, 255, 0);
+	//	IP4_ADDR(&app_info->mechine_info.gw, 10, 42, 0, 1);
 	//	app_info->mechine_info.upgrade_enable = 0;
 	//	app_save_config();
 	//	app_info->available = 1;
 	//}
 
+	//update_network_ip_config(app_info);
+
 	//ftpd_init();
 
 	//test_event();
 
-	start_channels();
+	//channels_info = start_channels();
+	//OS_ASSERT(channels_info != NULL);
+
+	//net_client_add_poll_loop(poll_loop);
+	//ftp_client_add_poll_loop(poll_loop);
 
 	while(1) {
 		uint32_t event;
@@ -195,7 +254,7 @@ void app(void const *argument)
 			}
 		}
 
-		handle_open_log();
+		//handle_open_log();
 		handle_usb_upgrade();
 		{
 #include <time.h>

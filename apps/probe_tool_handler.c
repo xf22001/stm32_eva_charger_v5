@@ -178,6 +178,9 @@ static void get_host_by_name(char *content, uint32_t size)
 
 static void fn4(request_t *request)
 {
+	const ip_addr_t *local_ip = get_default_gw();
+	_printf("local host ip:%s\n", inet_ntoa(*local_ip));
+
 	get_host_by_name((char *)(request + 1), request->header.data_size);
 	memset(request, 0, RECV_BUFFER_SIZE);
 }
@@ -199,11 +202,11 @@ static void fn5(request_t *request)
 	_printf("cpu usage:%d\n", cpu_usage);
 	_printf("free os heap size:%d\n", size);
 	_printf("total heap size:%d, free heap size:%d, used:%d, heap count:%d, max heap size:%d\n",
-			total_heap_size,
-			total_heap_size - heap_size,
-			heap_size,
-			heap_count,
-			heap_max_size);
+	        total_heap_size,
+	        total_heap_size - heap_size,
+	        heap_size,
+	        heap_count,
+	        heap_max_size);
 	_printf("current ticks:%lu\n", ticks);
 	_printf("%lu day %lu hour %lu min %lu sec\n",
 	        ticks / (1000 * 60 * 60 * 24),//day
@@ -237,9 +240,6 @@ static void fn5(request_t *request)
 	}
 }
 
-extern protocol_if_t protocol_if_tcp;
-extern protocol_if_t protocol_if_udp;
-extern request_callback_t request_callback_default;
 static void fn6(request_t *request)
 {
 	char *content = (char *)(request + 1);
@@ -255,22 +255,18 @@ static void fn6(request_t *request)
 
 	set_client_state(net_client_info, CLIENT_SUSPEND);
 
-	ret = sscanf(content, "%d %3s%n", &fn, protocol, &catched);
+	ret = sscanf(content, "%d %10s%n", &fn, protocol, &catched);
 
 	if(ret == 2) {
 		_printf("protocol:%s!\n", protocol);
 
-		if(memcmp(protocol, "tcp", 3) == 0) {
-			set_net_client_protocol_type(net_client_info, PROTOCOL_TCP);
+		if(memcmp(protocol, "default", 7) == 0) {
 			set_net_client_request_type(net_client_info, REQUEST_TYPE_DEFAULT);
-		} else if(memcmp(protocol, "udp", 3) == 0) {
-			set_net_client_protocol_type(net_client_info, PROTOCOL_UDP);
-			set_net_client_request_type(net_client_info, REQUEST_TYPE_DEFAULT);
-		} else if(memcmp(protocol, "ws", 2) == 0) {
-			set_net_client_protocol_type(net_client_info, PROTOCOL_WS);
-			set_net_client_request_type(net_client_info, REQUEST_TYPE_WEBSOCKET);
+		} else if(memcmp(protocol, "sse", 3) == 0) {
+			set_net_client_request_type(net_client_info, REQUEST_TYPE_SSE);
+		} else if(memcmp(protocol, "ocpp", 4) == 0) {
+			set_net_client_request_type(net_client_info, REQUEST_TYPE_OCPP_1_6);
 		}
-
 	} else {
 		_printf("no protocol!\n");
 	}
@@ -329,17 +325,24 @@ static void fn9(request_t *request)
 {
 }
 
+#include "test_https.h"
 void set_connect_enable(uint8_t enable);
-uint8_t get_connect_enable(void);
 static void fn10(request_t *request)
 {
+	//char *url = "https://httpbin.org/get";
+	//char *url = "ws://192.168.41.2:8080/ocpp/";
+	//char *url = "ws://47.244.218.210:8080/OCPP/echoSocket/13623";
+	//char *url = "wss://35.201.125.176:433/SSECHINAEVSE";
+	//char *url = "https://216.58.199.110";
+	//char *url = "wss://ocpp-16-json.dev-plugitcloud.com/SSECHINAEVSE";
+	//char *url = "wss://iot-ebus-ocpp-v16-server-test.azurewebsites.net/ws/test123";
+	//test_https(url);
 	set_connect_enable(1);
-
-	//while(get_connect_enable() == 1) {
-	//	continue;
-	//}
 }
 
+//http://coolaf.com/tool/chattest
+//11 0 ws://82.157.123.54:9010/ajaxchattest
+//11 0 wss://echo.websocket.org
 static void fn11(request_t *request)
 {
 	app_info_t *app_info = get_app_info();
@@ -360,20 +363,19 @@ static void fn11(request_t *request)
 
 	set_client_state(net_client_info, CLIENT_SUSPEND);
 
-	ret = sscanf(content, "%d %s %s %s %n", &fn, buffer->device_id, buffer->host, buffer->port, &catched);
+	ret = sscanf(content, "%d %s %s %n", &fn, buffer->device_id, buffer->uri, &catched);
 
-	if(ret == 4) {
+	if(ret == 3) {
 		app_info->available = 0;
 		strcpy(app_info->mechine_info.device_id, buffer->device_id);
-		strcpy(app_info->mechine_info.host, buffer->host);
-		strcpy(app_info->mechine_info.port, buffer->port);
+		strcpy(app_info->mechine_info.uri, buffer->uri);
 		app_info->available = 1;
 		app_save_config();
 	}
 
 	os_free(buffer);
 
-	debug("device id:\'%s\', server host:\'%s\', server port:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.host, app_info->mechine_info.port);
+	debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
 
 	set_client_state(net_client_info, CLIENT_REINIT);
 }

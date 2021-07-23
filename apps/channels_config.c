@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2021年06月07日 星期一 11时25分28秒
+ *   修改日期：2021年07月23日 星期五 09时52分28秒
  *   描    述：
  *
  *================================================================*/
@@ -53,15 +53,15 @@ char *get_channel_config_charger_type(channel_charger_type_t type)
 	return des;
 }
 
-char *get_channel_config_energy_meter_type(channel_energy_meter_type_t type)
+char *get_channel_config_energy_meter_type(energy_meter_type_t type)
 {
 	char *des = "unknow";
 
 	switch(type) {
-			add_des_case(CHANNEL_ENERGY_METER_TYPE_NONE);
-			add_des_case(CHANNEL_ENERGY_METER_TYPE_PROXY);
-			add_des_case(CHANNEL_ENERGY_METER_TYPE_DC);
-			add_des_case(CHANNEL_ENERGY_METER_TYPE_AC);
+			add_des_case(ENERGY_METER_TYPE_NONE);
+			add_des_case(ENERGY_METER_TYPE_PROXY);
+			add_des_case(ENERGY_METER_TYPE_DC);
+			add_des_case(ENERGY_METER_TYPE_AC);
 
 		default: {
 		}
@@ -78,8 +78,8 @@ static channel_config_t channel0_config = {
 		.hcan_bms = NULL,
 	},
 	.energy_meter_config = {
-		.energy_meter_type = CHANNEL_ENERGY_METER_TYPE_AC,
-		.huart_energy_meter = &huart3,
+		.energy_meter_type = ENERGY_METER_TYPE_AC,
+		.huart = &huart3,
 	},
 };
 
@@ -90,8 +90,8 @@ static channel_config_t channel1_config = {
 		.hcan_bms = NULL,
 	},
 	.energy_meter_config = {
-		.energy_meter_type = CHANNEL_ENERGY_METER_TYPE_AC,
-		.huart_energy_meter = &huart6,
+		.energy_meter_type = ENERGY_METER_TYPE_AC,
+		.huart = &huart6,
 	},
 };
 
@@ -106,7 +106,7 @@ static channels_config_t channels_config_0 = {
 	.channel_config = channel_config_sz,
 	.power_module_config = {
 		.channels_power_module_number = 0,
-		.hcan_power = NULL,
+		.hcan = NULL,
 		.channels_power_module_type = CHANNELS_POWER_MODULE_TYPE_NONE,
 	},
 	.voice_config = {

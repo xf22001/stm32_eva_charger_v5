@@ -25,6 +25,7 @@ USER_C_INCLUDES += -Iapps/modules/app
 USER_C_INCLUDES += -Iapps/modules/app/charger
 USER_C_INCLUDES += -Iapps/modules/app/power_modules
 USER_C_INCLUDES += -Iapps/modules/app/vfs_disk
+USER_C_INCLUDES += -Iapps/modules/app/net_client
 USER_C_INCLUDES += -Iapps/modules/tests
 
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include
@@ -53,21 +54,25 @@ USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
 USER_C_SOURCES += apps/can_config.c
 USER_C_SOURCES += apps/wiznet_spi.c
+USER_C_SOURCES += apps/channels_addr_handler.c
+USER_C_SOURCES += apps/display_cache.c
 
 USER_C_SOURCES += apps/modules/app/eeprom_config.c
 USER_C_SOURCES += apps/modules/app/poll_loop.c
 USER_C_SOURCES += apps/modules/app/probe_tool.c
 USER_C_SOURCES += apps/modules/app/uart_debug.c
 USER_C_SOURCES += apps/modules/app/file_log.c
-USER_C_SOURCES += apps/modules/app/request.c
-USER_C_SOURCES += apps/modules/app/net_client.c
-USER_C_SOURCES += apps/modules/app/net_protocol_udp.c
-USER_C_SOURCES += apps/modules/app/net_protocol_tcp.c
-USER_C_SOURCES += apps/modules/app/net_protocol_ws.c
-USER_C_SOURCES += apps/modules/app/request_default.c
-USER_C_SOURCES += apps/modules/app/https.c
-USER_C_SOURCES += apps/modules/app/request_ws.c
-USER_C_SOURCES += apps/modules/app/request_sse.c
+USER_C_SOURCES += apps/modules/app/net_client/request.c
+USER_C_SOURCES += apps/modules/app/net_client/net_client.c
+USER_C_SOURCES += apps/modules/app/net_client/net_protocol_udp.c
+USER_C_SOURCES += apps/modules/app/net_client/net_protocol_tcp.c
+USER_C_SOURCES += apps/modules/app/net_client/net_protocol_tls.c
+USER_C_SOURCES += apps/modules/app/net_client/request_default.c
+USER_C_SOURCES += apps/modules/app/net_client/request_sse.c
+USER_C_SOURCES += apps/modules/app/net_client/request_ocpp_1_6.c
+USER_C_SOURCES += apps/modules/app/net_client/https.c
+USER_C_SOURCES += apps/modules/app/net_client/websocket.c
+USER_C_SOURCES += apps/modules/app/net_client/test_https.c
 USER_C_SOURCES += apps/modules/app/ftp_client.c
 USER_C_SOURCES += apps/modules/app/vfs_disk/vfs.c
 USER_C_SOURCES += apps/modules/app/mt_file.c
@@ -109,13 +114,17 @@ USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_hlw8032.c
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
+USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_626.c
 USER_C_SOURCES += apps/modules/app/charger/channel_comm_channel.c
 USER_C_SOURCES += apps/modules/app/charger/channel_comm_channels.c
+USER_C_SOURCES += apps/modules/app/charger/display.c
 USER_C_SOURCES += apps/modules/hardware/flash.c
 USER_C_SOURCES += apps/modules/hardware/eeprom.c
 USER_C_SOURCES += apps/modules/hardware/dlt_645_master_txrx.c
 #USER_C_SOURCES += apps/modules/hardware/hw_rtc.c
 USER_C_SOURCES += apps/modules/hardware/hw_adc.c
+USER_C_SOURCES += apps/modules/hardware/modbus_slave_txrx.c
+USER_C_SOURCES += apps/modules/hardware/modbus_spec.c
 USER_C_SOURCES += apps/modules/drivers/spi_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_ops_hal.c
@@ -138,16 +147,21 @@ USER_C_SOURCES += apps/modules/tests/test_event.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
 USER_C_SOURCES += Src/net_sockets.c
+USER_C_SOURCES += apps/cJSON.c
 
 C_SOURCES += $(USER_C_SOURCES)
 
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
 USER_CFLAGS += -DSAL_HOOK
 USER_CFLAGS += -DLOG_CONFIG_FILE=\"log_config.h\"
+USER_CFLAGS += -DCJSON_API_VISIBILITY -DCJSON_EXPORT_SYMBOLS -DENABLE_LOCALES -Dcjson_EXPORTS
+
 #USER_CFLAGS += -DLOG_DISABLE
 #USER_CFLAGS += -DALLOC_TRACE_DISABLE
 
 CFLAGS += $(USER_CFLAGS)
+
+#LDFLAGS += -u _printf_float -Wl,--wrap=srand  -Wl,--wrap=rand
 LDFLAGS += -u _printf_float
 
 IAP_FILE := apps/modules/os/iap.h
