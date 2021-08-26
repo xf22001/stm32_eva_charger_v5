@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2021年06月11日 星期五 16时03分25秒
+ *   修改日期：2021年08月26日 星期四 14时42分09秒
  *   描    述：
  *
  *================================================================*/
@@ -22,6 +22,7 @@
 #include "iap.h"
 #include "app.h"
 #include "ftp_client.h"
+#include "channels.h"
 
 #include "sal_hook.h"
 
@@ -50,10 +51,13 @@ static void fn3(request_t *request)
 	uint8_t start_app = 0;
 
 	if(is_app() == 1) {
-		uint8_t flag = 0x00;
-		flash_write(APP_CONFIG_ADDRESS, &flag, 1);
-		_printf("in app, reset for upgrade!\n");
-		HAL_NVIC_SystemReset();
+		if(set_app_valid(0) == 0) {
+			_printf("in app, reset for upgrade!\n");
+			HAL_NVIC_SystemReset();
+		} else {
+			_printf("invalid app failed!\n");
+		}
+
 		return;
 	}
 
@@ -95,11 +99,13 @@ static void fn3(request_t *request)
 	loopback(request);
 
 	if(start_app) {
-		uint8_t flag = 0x01;
-
 		_printf("start app!\n");
-		flash_write(APP_CONFIG_ADDRESS, &flag, 1);
-		HAL_NVIC_SystemReset();
+
+		if(set_app_valid(1) == 0) {
+			HAL_NVIC_SystemReset();
+		} else {
+			_printf("valid app failed!\n");
+		}
 	}
 }
 
@@ -178,7 +184,7 @@ static void get_host_by_name(char *content, uint32_t size)
 
 static void fn4(request_t *request)
 {
-	const ip_addr_t *local_ip = get_default_gw();
+	const ip_addr_t *local_ip = get_default_ipaddr();
 	_printf("local host ip:%s\n", inet_ntoa(*local_ip));
 
 	get_host_by_name((char *)(request + 1), request->header.data_size);
@@ -258,14 +264,24 @@ static void fn6(request_t *request)
 	ret = sscanf(content, "%d %10s%n", &fn, protocol, &catched);
 
 	if(ret == 2) {
+		app_info_t *app_info = get_app_info();
+
+		OS_ASSERT(app_info != NULL);
+
 		_printf("protocol:%s!\n", protocol);
 
-		if(memcmp(protocol, "default", 7) == 0) {
-			set_net_client_request_type(net_client_info, REQUEST_TYPE_DEFAULT);
-		} else if(memcmp(protocol, "sse", 3) == 0) {
-			set_net_client_request_type(net_client_info, REQUEST_TYPE_SSE);
-		} else if(memcmp(protocol, "ocpp", 4) == 0) {
-			set_net_client_request_type(net_client_info, REQUEST_TYPE_OCPP_1_6);
+		if(strcmp(protocol, "default") == 0) {
+			app_info->mechine_info.request_type = REQUEST_TYPE_DEFAULT;
+			app_save_config();
+		} else if(strcmp(protocol, "sse") == 0) {
+			app_info->mechine_info.request_type = REQUEST_TYPE_SSE;
+			app_save_config();
+		} else if(strcmp(protocol, "ocpp") == 0) {
+			app_info->mechine_info.request_type = REQUEST_TYPE_OCPP_1_6;
+			app_save_config();
+		} else {
+			app_info->mechine_info.request_type = REQUEST_TYPE_NONE;
+			app_save_config();
 		}
 	} else {
 		_printf("no protocol!\n");
@@ -274,47 +290,46 @@ static void fn6(request_t *request)
 	set_client_state(net_client_info, CLIENT_REINIT);
 }
 
-//#include "eeprom.h"
-//#include "main.h"
-//extern SPI_HandleTypeDef hspi3;
+#include "test_storage.h"
 static void fn7(request_t *request)
 {
-	//uint8_t id;
-	////char *buffer = (char *)os_alloc(1024);
-	////int ret;
-	////bms_data_settings_t *settings = (bms_data_settings_t *)0;
+	char *content = (char *)(request + 1);
+	int fn;
+	int op;
+	int start;
+	int size;
+	int catched;
+	int ret;
 
-	////if(buffer == NULL) {
-	////	return;
-	////}
+	ret = sscanf(content, "%d %d %d %d%n", &fn, &op, &start, &size, &catched);
 
-	//eeprom_info_t *eeprom_info = get_or_alloc_eeprom_info(get_or_alloc_spi_info(&hspi3), spi3_cs_GPIO_Port, spi3_cs_Pin, spi3_wp_GPIO_Port, spi3_wp_Pin);
+	if(ret == 4) {
+		app_info_t *app_info = get_app_info();
 
-	//if(eeprom_info == NULL) {
-	//	return;
-	//}
+		OS_ASSERT(app_info->storage_info != NULL);
 
-	//id = eeprom_id(eeprom_info);
-	//_printf("eeprom id:0x%x\n", id);
-	////_printf("test ...\n");
+		switch(op) {
+			case 0: {
+				test_storage_check(app_info->storage_info, start, size);
+			}
+			break;
 
-	////memset(buffer, 0, 1024);
+			case 1: {
+				test_storage_read(app_info->storage_info, start, size);
+			}
+			break;
 
-	////eeprom_write(eeprom_info, 5 * 1024 + 1, (uint8_t *)0x8000000, 1024);
-	////eeprom_read(eeprom_info, 5 * 1024 + 1, (uint8_t *)buffer, 1024);
+			case 2: {
+				test_storage_write(app_info->storage_info, start, size);
+			}
+			break;
 
-	////ret = memcmp(buffer, (const void *)0x8000000, 1024);
+			default: {
+			}
+			break;
+		}
 
-	////if(ret == 0) {
-	////	_printf("read write successful!\n");
-	////} else {
-	////	_printf("read write failed!\n");
-	////}
-
-	////os_free(buffer);
-	////_printf("bms_data_settings_t size:%d\n", sizeof(bms_data_settings_t));
-
-	////_printf("settings->cem_data.u1 offset:%d\n", (void *)&settings->cem_data.u1 - (void *)settings);
+	}
 }
 
 static void fn8(request_t *request)
@@ -343,6 +358,8 @@ static void fn10(request_t *request)
 //http://coolaf.com/tool/chattest
 //11 0 ws://82.157.123.54:9010/ajaxchattest
 //11 0 wss://echo.websocket.org
+//11 0 tcp://112.74.40.227:12345
+//11 0 udp://112.74.40.227:12345
 static void fn11(request_t *request)
 {
 	app_info_t *app_info = get_app_info();
@@ -366,10 +383,8 @@ static void fn11(request_t *request)
 	ret = sscanf(content, "%d %s %s %n", &fn, buffer->device_id, buffer->uri, &catched);
 
 	if(ret == 3) {
-		app_info->available = 0;
 		strcpy(app_info->mechine_info.device_id, buffer->device_id);
 		strcpy(app_info->mechine_info.uri, buffer->uri);
-		app_info->available = 1;
 		app_save_config();
 	}
 
@@ -410,6 +425,48 @@ static void fn12(request_t *request)
 	os_free(ftp_server_path);
 }
 
+static void fn14(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel_id;
+	int type;//channel_event_type_t
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %d %n",
+	             &fn,
+	             &channel_id,
+	             &type,
+	             &catched);
+	debug("ret:%d", ret);
+
+	if(ret == 3) {
+		channel_event_t *channel_event = os_calloc(1, sizeof(channel_event_t));
+		channels_event_t *channels_event = os_calloc(1, sizeof(channels_event_t));
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel_id;
+
+		OS_ASSERT(channel_event != NULL);
+		OS_ASSERT(channels_event != NULL);
+
+		channel_info->channel_event_start_display.charge_mode = CHANNEL_RECORD_CHARGE_MODE_UNLIMIT;
+		channel_info->channel_event_start_display.start_reason = CHANNEL_RECORD_ITEM_START_REASON_BMS;
+
+		channel_event->channel_id = channel_id;
+		channel_event->type = type;
+		channel_event->ctx = &channel_info->channel_event_start_display;
+
+		channels_event->type = CHANNELS_EVENT_CHANNEL;
+		channels_event->event = channel_event;
+
+		if(send_channels_event(channels_info, channels_event, 100) != 0) {
+			debug("send channel %d type %d failed!", channel_id, type);
+		} else {
+			debug("send channel %d type %d successful!", channel_id, type);
+		}
+	}
+}
 static server_item_t server_map[] = {
 	{1, fn1},
 	{2, fn2},

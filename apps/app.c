@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年07月23日 星期五 11时42分39秒
+ *   修改日期：2021年08月26日 星期四 13时59分29秒
  *   描    述：
  *
  *================================================================*/
@@ -14,24 +14,18 @@
 
 #include <string.h>
 
-#include "app_platform.h"
-#include "cmsis_os.h"
-
 //#include "iwdg.h"
 
 #include "os_utils.h"
-#include "eeprom_layout.h"
+#include "config_layout.h"
 
 #include "test_serial.h"
 #include "test_event.h"
 #include "file_log.h"
-#include "uart_debug.h"
 #include "probe_tool.h"
 #include "net_client.h"
 #include "ftp_client.h"
 #include "usb_upgrade.h"
-
-#include "log.h"
 
 #include "channels.h"
 #include "duty_cycle_pattern.h"
@@ -41,12 +35,15 @@
 #include "sal_netdev.h"
 #include "wiz_ethernet.h"
 #include "display.h"
-#include "display_cache.h"
+#include "sal_hook.h"
+
+#include "log.h"
 
 //extern IWDG_HandleTypeDef hiwdg;
 //extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart4;
 extern SPI_HandleTypeDef hspi2;
+extern I2C_HandleTypeDef hi2c3;
 
 static app_info_t *app_info = NULL;
 static os_signal_t app_event = NULL;
@@ -58,18 +55,18 @@ app_info_t *get_app_info(void)
 
 int app_load_config(void)
 {
-	eeprom_layout_t *eeprom_layout = get_eeprom_layout();
-	size_t offset = (size_t)&eeprom_layout->mechine_info_seg.eeprom_mechine_info.mechine_info;
+	config_layout_t *config_layout = get_config_layout();
+	size_t offset = (size_t)&config_layout->mechine_info_seg.storage_mechine_info.mechine_info;
 	debug("offset:%d", offset);
-	return eeprom_load_config_item(app_info->eeprom_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
+	return load_config_item(app_info->storage_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
 
 int app_save_config(void)
 {
-	eeprom_layout_t *eeprom_layout = get_eeprom_layout();
-	size_t offset = (size_t)&eeprom_layout->mechine_info_seg.eeprom_mechine_info.mechine_info;
+	config_layout_t *config_layout = get_config_layout();
+	size_t offset = (size_t)&config_layout->mechine_info_seg.storage_mechine_info.mechine_info;
 	debug("offset:%d", offset);
-	return eeprom_save_config_item(app_info->eeprom_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
+	return save_config_item(app_info->storage_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
 
 void app_init(void)
@@ -130,25 +127,41 @@ void update_network_ip_config(app_info_t *app_info)
 			osDelay(1000);
 		} else {
 			if(app_info->mechine_info.dhcp_enable == 0) {
-				if(set_default_ipaddr(&app_info->mechine_info.ip) != 0) {
+				ip_addr_t ip;
+				ip_addr_t sn;
+				ip_addr_t gw;
+
+				if(ipaddr_aton(app_info->mechine_info.ip, &ip) == 0) {
+					debug("ip:%s", app_info->mechine_info.ip);
+				}
+
+				if(ipaddr_aton(app_info->mechine_info.sn, &sn) == 0) {
+					debug("sn:%s", app_info->mechine_info.sn);
+				}
+
+				if(ipaddr_aton(app_info->mechine_info.gw, &gw) == 0) {
+					debug("gw:%s", app_info->mechine_info.gw);
+				}
+
+				if(set_default_ipaddr(&ip) != 0) {
 					debug("");
 					osDelay(1000);
 					continue;
 				}
 
-				if(set_default_netmask(&app_info->mechine_info.sn) != 0) {
+				if(set_default_netmask(&sn) != 0) {
 					debug("");
 					osDelay(1000);
 					continue;
 				}
 
-				if(set_default_gw(&app_info->mechine_info.gw) != 0) {
+				if(set_default_gw(&gw) != 0) {
 					debug("");
 					osDelay(1000);
 					continue;
 				}
 
-				if(set_default_dns_server(&app_info->mechine_info.gw) != 0) {
+				if(set_default_dns_server(&gw) != 0) {
 					debug("");
 					osDelay(1000);
 					continue;
@@ -160,44 +173,62 @@ void update_network_ip_config(app_info_t *app_info)
 	}
 }
 
+static void sync_storage_w25q256(storage_info_t *storage_info)
+{
+	static uint32_t stamps = 0;
+	uint32_t ticks = osKernelSysTick();
+
+	if(ticks_duration(ticks, stamps) >= 1000) {
+		stamps = ticks;
+		storage_sync(storage_info);
+	}
+}
+
 void app(void const *argument)
 {
 
 	poll_loop_t *poll_loop;
-	channels_info_t *channels_info;
-
-	//add_log_handler((log_fn_t)log_uart_data);
-	add_log_handler((log_fn_t)log_udp_data);
-	//add_log_handler((log_fn_t)log_file_data);
+	channels_info_t *channels_info = NULL;
+	display_info_t *display_info = NULL;
+	int ret;
 
 	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
+
 	OS_ASSERT(app_info != NULL);
-	//app_info->eeprom_info = get_or_alloc_eeprom_info(get_or_alloc_spi_info(&hspi2),
-	//                                       e2cs_GPIO_Port,
-	//                                       e2cs_Pin,
-	//                                       NULL,
-	//                                       0);
 
-	//OS_ASSERT(app_info->eeprom_info != NULL);
+	app_info->storage_info = get_or_alloc_storage_info(&hi2c3);
+	OS_ASSERT(app_info->storage_info != NULL);
 
+	ret = app_load_config();
 
+	//ret = -1;
 
-	//{
-	//	uart_info_t *uart_info = get_or_alloc_uart_info(&huart4);
+	if(ret == 0) {
+		debug("app_load_config successful!");
+		debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
+	} else {
+		debug("app_load_config failed!");
+		snprintf(app_info->mechine_info.device_id, sizeof(app_info->mechine_info.device_id), "%s", "0000000000");
+		snprintf(app_info->mechine_info.uri, sizeof(app_info->mechine_info.uri), "%s", "tcp://112.74.40.227:12345");
+		debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
+		snprintf(app_info->mechine_info.ip, sizeof(app_info->mechine_info.ip), "%d.%d.%d.%d", 10, 42, 0, 122);
+		snprintf(app_info->mechine_info.sn, sizeof(app_info->mechine_info.sn), "%d.%d.%d.%d", 255, 255, 255, 0);
+		snprintf(app_info->mechine_info.gw, sizeof(app_info->mechine_info.gw), "%d.%d.%d.%d", 10, 42, 0, 1);
+		app_info->mechine_info.dhcp_enable = 0;
+		app_info->mechine_info.upgrade_enable = 0;
+		app_save_config();
+	}
 
-	//	if(uart_info == NULL) {
-	//		app_panic();
-	//	}
-
-	//	osThreadDef(task_test_serial, task_test_serial, osPriorityNormal, 0, 128);
-	//	osThreadCreate(osThread(task_test_serial), uart_info);
-	//}
+	load_app_display_cache(app_info);
 
 	sal_init();
 	wiz_init();
 
 	poll_loop = get_or_alloc_poll_loop(0);
 	OS_ASSERT(poll_loop != NULL);
+
+	update_network_ip_config(app_info);
+
 	probe_broadcast_add_poll_loop(poll_loop);
 	probe_server_add_poll_loop(poll_loop);
 
@@ -205,27 +236,10 @@ void app(void const *argument)
 		osDelay(1);
 	}
 
+	add_log_handler((log_fn_t)log_udp_data);
+	//add_log_handler((log_fn_t)log_file_data);
+
 	debug("===========================================start app============================================");
-
-	//if(app_load_config() == 0) {
-	//	debug("app_load_config successful!");
-	//	debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
-	//	load_app_display_cache(app_info);
-	//	app_info->available = 1;
-	//} else {
-	//	debug("app_load_config failed!");
-	//	snprintf(app_info->mechine_info.device_id, sizeof(app_info->mechine_info.device_id), "%s", "0000000000");
-	//	snprintf(app_info->mechine_info.uri, sizeof(app_info->mechine_info.uri), "%s", "tcp://112.74.40.227:12345");
-	//	debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
-	//	IP4_ADDR(&app_info->mechine_info.ip, 10, 42, 0, 122);
-	//	IP4_ADDR(&app_info->mechine_info.sn, 255, 255, 255, 0);
-	//	IP4_ADDR(&app_info->mechine_info.gw, 10, 42, 0, 1);
-	//	app_info->mechine_info.upgrade_enable = 0;
-	//	app_save_config();
-	//	app_info->available = 1;
-	//}
-
-	//update_network_ip_config(app_info);
 
 	//ftpd_init();
 
@@ -234,12 +248,27 @@ void app(void const *argument)
 	//channels_info = start_channels();
 	//OS_ASSERT(channels_info != NULL);
 
+	//if(init_channels_notify_voice(channels_info) != 0) {
+	//	debug("");
+	//}
+
 	//net_client_add_poll_loop(poll_loop);
 	//ftp_client_add_poll_loop(poll_loop);
 
+	//display_info = (display_info_t *)channels_info->display_info;
+	//OS_ASSERT(display_info != NULL);
+
+	//app_info->display_data_invalid_callback_item.fn = app_mechine_info_invalid;
+	//app_info->display_data_invalid_callback_item.fn_ctx = app_info;
+	//OS_ASSERT(register_callback(display_info->modbus_slave_info->data_invalid_chain, &app_info->display_data_invalid_callback_item) == 0);
+
+	//app_info->display_data_changed_callback_item.fn = app_mechine_info_changed;
+	//app_info->display_data_changed_callback_item.fn_ctx = app_info;
+	//OS_ASSERT(register_callback(display_info->modbus_slave_info->data_changed_chain, &app_info->display_data_changed_callback_item) == 0);
+
 	while(1) {
 		uint32_t event;
-		int ret = signal_wait(app_event, &event, 1000);
+		ret = signal_wait(app_event, &event, 1000);
 
 		if(ret == 0) {
 			switch(event) {
@@ -254,46 +283,9 @@ void app(void const *argument)
 			}
 		}
 
-		//handle_open_log();
+		handle_open_log();
 		handle_usb_upgrade();
-		{
-#include <time.h>
-#include "hw_rtc.h"
-#include "hw_adc.h"
-#include "ntc_temperature.h"
-			//extern ADC_HandleTypeDef hadc1;
-			//adc_info_t *adc_info = get_or_alloc_adc_info(&hadc1);
-			//static int set = 0;
-			//struct tm *tm = rtc_get_datetime();
-			//debug("tm %04d-%02d-%02d %02d:%02d:%02d",
-			//      tm->tm_year + 1900,
-			//      tm->tm_mon + 1,
-			//      tm->tm_mday,
-			//      tm->tm_hour,
-			//      tm->tm_min,
-			//      tm->tm_sec);
-
-			//if(tm->tm_sec == 30) {
-			//	if(set == 0) {
-			//		set = 1;
-			//	}
-
-			//	debug("set rtc ...");
-			//	tm->tm_year = 2021 - 1900;
-			//	tm->tm_mon  = 5 - 1;
-			//	tm->tm_mday = 15;
-			//	tm->tm_hour = 15;
-			//	tm->tm_min = 52;
-			//	tm->tm_sec = 0;
-			//	debug("rtc_set_datetime(tm):%d", rtc_set_datetime(tm));
-			//}
-
-			//OS_ASSERT(adc_info != NULL);
-			//debug("adc[0]:%d, temperature:%d", get_adc_value(adc_info, 0), get_ntc_temperature(10000, get_adc_value(adc_info, 0), 4095));
-			//debug("adc[1]:%d", get_adc_value(adc_info, 1));
-			//debug("adc[2]:%d", get_adc_value(adc_info, 2));
-			//debug("adc[3]:%d", get_adc_value(adc_info, 3));
-		}
+		sync_storage_w25q256(app_info->storage_info);
 	}
 }
 
