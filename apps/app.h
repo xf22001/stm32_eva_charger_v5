@@ -6,7 +6,7 @@
  *   文件名称：app.h
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时56分29秒
- *   修改日期：2021年08月25日 星期三 13时00分09秒
+ *   修改日期：2021年12月06日 星期一 10时11分46秒
  *   描    述：
  *
  *================================================================*/
@@ -49,6 +49,7 @@ typedef struct {
 	uint8_t request_type;
 
 	uint8_t upgrade_enable;
+	uint8_t reset_config;
 } mechine_info_t;
 
 typedef struct {
@@ -64,17 +65,25 @@ typedef struct {
 
 typedef enum {
 	APP_EVENT_NONE = 0,
-	APP_EVENT_USB,
+	APP_EVENT_HOST_USER_SELECT_CONFIGURATION,
+	APP_EVENT_HOST_USER_CLASS_ACTIVE,
+	APP_EVENT_HOST_USER_CLASS_SELECTED,
+	APP_EVENT_HOST_USER_CONNECTION,
+	APP_EVENT_HOST_USER_DISCONNECTION,
+	APP_EVENT_HOST_USER_UNRECOVERED_ERROR,
 } app_event_t;
 
 app_info_t *get_app_info(void);
 int app_load_config(void);
 int app_save_config(void);
+int app_event_init(size_t size);
 void app_init(void);
-void send_app_event(app_event_t event);
+void send_app_event(app_event_t event, uint32_t timeout);
 void load_app_display_cache(app_info_t *app_info);
 void sync_app_display_cache(app_info_t *app_info);
 void update_network_ip_config(app_info_t *app_info);
+void app_set_reset_config(void);
+uint8_t app_get_reset_config(void);
 void app(void const *argument);
 void idle(void const *argument);
 

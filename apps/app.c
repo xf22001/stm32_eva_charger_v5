@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年08月26日 星期四 13时59分29秒
+ *   修改日期：2021年12月27日 星期一 10时15分18秒
  *   描    述：
  *
  *================================================================*/
@@ -26,6 +26,7 @@
 #include "net_client.h"
 #include "ftp_client.h"
 #include "usb_upgrade.h"
+#include "usbh_user_callback.h"
 
 #include "channels.h"
 #include "duty_cycle_pattern.h"
@@ -69,14 +70,29 @@ int app_save_config(void)
 	return save_config_item(app_info->storage_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
 
-void app_init(void)
+int app_event_init(size_t size)
 {
-	app_event = signal_create(1);
+	int ret = -1;
+
+	if(app_event != NULL) {
+		return ret;
+	}
+
+	app_event = signal_create(size);
+	OS_ASSERT(app_event != NULL);
+	ret = 0;
+	return ret;
 }
 
-void send_app_event(app_event_t event)
+void app_init(void)
 {
-	signal_send(app_event, event, 0);
+	mem_info_init();
+	mt_file_init();
+}
+
+void send_app_event(app_event_t event, uint32_t timeout)
+{
+	signal_send(app_event, event, timeout);
 }
 
 static void app_mechine_info_invalid(void *fn_ctx, void *chain_ctx)
@@ -184,13 +200,27 @@ static void sync_storage_w25q256(storage_info_t *storage_info)
 	}
 }
 
+static uint8_t reset_config = 0;
+
+void app_set_reset_config(void)
+{
+	OS_ASSERT(app_info != NULL);
+	app_info->mechine_info.reset_config = 1;
+}
+
+uint8_t app_get_reset_config(void)
+{
+	return reset_config;
+}
+
 void app(void const *argument)
 {
-
 	poll_loop_t *poll_loop;
 	channels_info_t *channels_info = NULL;
 	display_info_t *display_info = NULL;
 	int ret;
+
+	app_init();
 
 	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
 
@@ -201,7 +231,13 @@ void app(void const *argument)
 
 	ret = app_load_config();
 
-	//ret = -1;
+	if(ret == 0) {
+		reset_config = app_info->mechine_info.reset_config;
+
+		if(app_get_reset_config() != 0) {
+			ret = -1;
+		}
+	}
 
 	if(ret == 0) {
 		debug("app_load_config successful!");
@@ -215,7 +251,8 @@ void app(void const *argument)
 		snprintf(app_info->mechine_info.sn, sizeof(app_info->mechine_info.sn), "%d.%d.%d.%d", 255, 255, 255, 0);
 		snprintf(app_info->mechine_info.gw, sizeof(app_info->mechine_info.gw), "%d.%d.%d.%d", 10, 42, 0, 1);
 		app_info->mechine_info.dhcp_enable = 0;
-		app_info->mechine_info.upgrade_enable = 0;
+		app_info->mechine_info.request_type = REQUEST_TYPE_SSE;
+		app_info->mechine_info.reset_config = 0;
 		app_save_config();
 	}
 
@@ -245,26 +282,28 @@ void app(void const *argument)
 
 	//test_event();
 
-	//channels_info = start_channels();
-	//OS_ASSERT(channels_info != NULL);
+	channels_info = start_channels();
+	OS_ASSERT(channels_info != NULL);
 
-	//if(init_channels_notify_voice(channels_info) != 0) {
-	//	debug("");
-	//}
-
-	//net_client_add_poll_loop(poll_loop);
+	net_client_add_poll_loop(poll_loop);
 	//ftp_client_add_poll_loop(poll_loop);
 
-	//display_info = (display_info_t *)channels_info->display_info;
-	//OS_ASSERT(display_info != NULL);
+	display_info = (display_info_t *)channels_info->display_info;
+	OS_ASSERT(display_info != NULL);
 
-	//app_info->display_data_invalid_callback_item.fn = app_mechine_info_invalid;
-	//app_info->display_data_invalid_callback_item.fn_ctx = app_info;
-	//OS_ASSERT(register_callback(display_info->modbus_slave_info->data_invalid_chain, &app_info->display_data_invalid_callback_item) == 0);
+	if(display_info->modbus_slave_info != NULL) {
+		app_info->display_data_invalid_callback_item.fn = app_mechine_info_invalid;
+		app_info->display_data_invalid_callback_item.fn_ctx = app_info;
+		OS_ASSERT(register_callback(display_info->modbus_slave_info->data_invalid_chain, &app_info->display_data_invalid_callback_item) == 0);
 
-	//app_info->display_data_changed_callback_item.fn = app_mechine_info_changed;
-	//app_info->display_data_changed_callback_item.fn_ctx = app_info;
-	//OS_ASSERT(register_callback(display_info->modbus_slave_info->data_changed_chain, &app_info->display_data_changed_callback_item) == 0);
+		app_info->display_data_changed_callback_item.fn = app_mechine_info_changed;
+		app_info->display_data_changed_callback_item.fn_ctx = app_info;
+		OS_ASSERT(register_callback(display_info->modbus_slave_info->data_changed_chain, &app_info->display_data_changed_callback_item) == 0);
+	}
+
+	if(init_channels_notify_voice(channels_info) != 0) {
+		debug("");
+	}
 
 	while(1) {
 		uint32_t event;
@@ -272,12 +311,27 @@ void app(void const *argument)
 
 		if(ret == 0) {
 			switch(event) {
-				case APP_EVENT_USB: {
-					start_usb_upgrade();
+				case APP_EVENT_HOST_USER_CLASS_ACTIVE: {
+					if(mt_f_mount(get_vfs_fs(), "", 0) == FR_OK) {
+						start_usb_upgrade();
+					}
+				}
+				break;
+
+				case APP_EVENT_HOST_USER_CONNECTION: {
+				}
+				break;
+
+				case APP_EVENT_HOST_USER_DISCONNECTION: {
+					try_to_close_log();
+
+					if(mt_f_mount(0, "", 0) != FR_OK) {
+					}
 				}
 				break;
 
 				default: {
+					debug("unhandled event %x", event);
 				}
 				break;
 			}
@@ -311,4 +365,26 @@ void idle(void const *argument)
 		update_work_led();
 		osDelay(10);
 	}
+}
+
+int force_bootloader(void)
+{
+	int ret = -1;
+	u_uint8_bits_t u_uint8_bits;
+	u_uint8_bits.v = 0;
+
+	HAL_Init();
+	MX_GPIO_Init();
+
+	//u_uint8_bits.s.bit0 = (HAL_GPIO_ReadPin(d1_GPIO_Port, d1_Pin) == GPIO_PIN_SET) ? 1 : 0;
+	//u_uint8_bits.s.bit1 = (HAL_GPIO_ReadPin(d2_GPIO_Port, d2_Pin) == GPIO_PIN_SET) ? 1 : 0;
+	//u_uint8_bits.s.bit2 = (HAL_GPIO_ReadPin(d3_GPIO_Port, d3_Pin) == GPIO_PIN_SET) ? 1 : 0;
+
+	if(u_uint8_bits.v == 0x07) {
+		ret = 0;
+	}
+
+	HAL_DeInit();
+
+	return ret;
 }
