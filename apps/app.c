@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年12月27日 星期一 10时15分18秒
+ *   修改日期：2021年12月28日 星期二 13时49分02秒
  *   描    述：
  *
  *================================================================*/
@@ -213,12 +213,150 @@ uint8_t app_get_reset_config(void)
 	return reset_config;
 }
 
+#define CACHE_STORAGE_SECTOR_SIZE 4096
+
+#pragma pack(push, 1)
+typedef struct {
+	uint8_t cache[CACHE_STORAGE_SECTOR_SIZE];
+	uint8_t magic;//0x73
+	uint32_t addr;
+	uint8_t valid;
+} cache_storage_layout_t;
+#pragma pack(pop)
+
+static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
+{
+	storage_info_t *storage_info = (storage_info_t *)fn_ctx;
+	cache_event_ctx_t *cache_event_ctx = (cache_event_ctx_t *)chain_ctx;
+	cache_storage_layout_t *cache_storage_layout = (cache_storage_layout_t *)0;
+	uint32_t addr = cache_event_ctx->addr;
+	size_t start = cache_event_ctx->start;
+	size_t size = cache_event_ctx->size;
+	uint8_t *cache = cache_event_ctx->cache;
+	size_t offset;
+
+	switch(cache_event_ctx->cache_event_action) {
+		case CACHE_EVENT_ACTION_INVALID: {
+			uint8_t valid = 0;
+
+			mutex_lock(storage_info->action_mutex);
+
+			offset = (size_t)&cache_storage_layout->valid;
+
+			while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
+				debug("");
+			}
+
+			debug("CACHE_EVENT_ACTION_INVALID");
+
+			mutex_unlock(storage_info->action_mutex);
+		}
+		break;
+
+		case CACHE_EVENT_ACTION_UPDATE: {
+			uint8_t valid = 1;
+
+			mutex_lock(storage_info->action_mutex);
+
+			offset = (size_t)&cache_storage_layout->cache[0];
+
+			while(storage_write(storage_info, offset + start, cache + start, size) != 0) {
+				debug("");
+			}
+
+			offset = (size_t)&cache_storage_layout->addr;
+
+			while(storage_write(storage_info, offset, (uint8_t *)&addr, sizeof(addr)) != 0) {
+				debug("");
+			}
+
+			offset = (size_t)&cache_storage_layout->valid;
+
+			while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
+				debug("");
+			}
+
+			debug("CACHE_EVENT_ACTION_UPDATE addr:%x, start:%d, size:%d", addr, start, size);
+
+			mutex_unlock(storage_info->action_mutex);
+		}
+		break;
+
+		case CACHE_EVENT_ACTION_RESTORE: {
+			uint8_t magic;
+			uint8_t valid;
+
+			cache_event_ctx->cache_event_action = CACHE_EVENT_ACTION_NONE;
+
+			mutex_lock(storage_info->action_mutex);
+
+			offset = (size_t)&cache_storage_layout->magic;
+
+			while(storage_read(storage_info, offset, (uint8_t *)&magic, sizeof(magic)) != 0) {
+				debug("");
+			}
+
+			debug("magic %x", magic);
+
+			if(magic == 0x73) {
+				offset = (size_t)&cache_storage_layout->valid;
+
+				while(storage_read(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
+					debug("");
+				}
+
+				debug("valid %d", valid);
+
+				if(valid == 1) {
+					offset = (size_t)&cache_storage_layout->addr;
+
+					while(storage_read(storage_info, offset, (uint8_t *)&addr, sizeof(addr)) != 0) {
+						debug("");
+					}
+
+					cache_event_ctx->addr = addr;
+					offset = (size_t)&cache_storage_layout->cache[0];
+
+					while(storage_read(storage_info, offset, cache, CACHE_STORAGE_SECTOR_SIZE) != 0) {
+						debug("");
+					}
+
+					cache_event_ctx->cache_event_action = CACHE_EVENT_ACTION_UPDATE;
+					debug("CACHE_EVENT_ACTION_RESTORE addr:%x", addr);
+				}
+			} else {
+				magic = 0x73;
+				offset = (size_t)&cache_storage_layout->magic;
+
+				while(storage_write(storage_info, offset, (uint8_t *)&magic, sizeof(magic)) != 0) {
+					debug("");
+				}
+
+				valid = 0;
+				offset = (size_t)&cache_storage_layout->valid;
+
+				while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
+					debug("");
+				}
+			}
+
+			mutex_unlock(storage_info->action_mutex);
+		}
+		break;
+
+		default: {
+		}
+		break;
+	}
+}
+
 void app(void const *argument)
 {
 	poll_loop_t *poll_loop;
 	channels_info_t *channels_info = NULL;
 	display_info_t *display_info = NULL;
 	int ret;
+	storage_info_t *cache_storage_info;
 
 	app_init();
 
@@ -226,24 +364,31 @@ void app(void const *argument)
 
 	OS_ASSERT(app_info != NULL);
 
-	app_info->storage_info = get_or_alloc_storage_info(&hi2c3);
+	cache_storage_info = get_or_alloc_storage_info(&hi2c3);
+	OS_ASSERT(cache_storage_info != NULL);
+
+	app_info->storage_info = get_or_alloc_storage_info(&hspi2);
 	OS_ASSERT(app_info->storage_info != NULL);
+
+	storage_set_cache(app_info->storage_info, cache_storage_info, cache_storage_callback);
 
 	ret = app_load_config();
 
 	if(ret == 0) {
+		debug("app_load_config successful!");
 		reset_config = app_info->mechine_info.reset_config;
 
 		if(app_get_reset_config() != 0) {
+			debug("try to reset config!");
 			ret = -1;
 		}
+	} else {
+		debug("app_load_config failed!");
 	}
 
 	if(ret == 0) {
-		debug("app_load_config successful!");
 		debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
 	} else {
-		debug("app_load_config failed!");
 		snprintf(app_info->mechine_info.device_id, sizeof(app_info->mechine_info.device_id), "%s", "0000000000");
 		snprintf(app_info->mechine_info.uri, sizeof(app_info->mechine_info.uri), "%s", "tcp://112.74.40.227:12345");
 		debug("device id:\'%s\', server uri:\'%s\'!", app_info->mechine_info.device_id, app_info->mechine_info.uri);
@@ -285,7 +430,7 @@ void app(void const *argument)
 	channels_info = start_channels();
 	OS_ASSERT(channels_info != NULL);
 
-	net_client_add_poll_loop(poll_loop);
+	//net_client_add_poll_loop(poll_loop);
 	//ftp_client_add_poll_loop(poll_loop);
 
 	display_info = (display_info_t *)channels_info->display_info;
