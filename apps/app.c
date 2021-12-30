@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年12月28日 星期二 13时49分02秒
+ *   修改日期：2021年12月30日 星期四 11时16分03秒
  *   描    述：
  *
  *================================================================*/
@@ -21,6 +21,7 @@
 
 #include "test_serial.h"
 #include "test_event.h"
+#include "test_can.h"
 #include "file_log.h"
 #include "probe_tool.h"
 #include "net_client.h"
@@ -45,6 +46,10 @@
 extern UART_HandleTypeDef huart4;
 extern SPI_HandleTypeDef hspi2;
 extern I2C_HandleTypeDef hi2c3;
+
+extern CAN_HandleTypeDef hcan1;
+extern CAN_HandleTypeDef hcan2;
+extern SPI_HandleTypeDef hspi3;
 
 static app_info_t *app_info = NULL;
 static os_signal_t app_event = NULL;
@@ -426,6 +431,11 @@ void app(void const *argument)
 	//ftpd_init();
 
 	//test_event();
+	test_can(&hcan2, &hspi3);
+
+	while(1) {
+		osDelay(10);
+	}
 
 	channels_info = start_channels();
 	OS_ASSERT(channels_info != NULL);

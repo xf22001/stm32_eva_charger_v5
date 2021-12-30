@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2021年08月26日 星期四 12时14分11秒
+#   修改日期：2021年12月30日 星期四 09时49分59秒
 #   描    述：
 #
 #================================================================
@@ -64,6 +64,7 @@ USER_C_SOURCES += apps/channels_addr_handler.c
 USER_C_SOURCES += apps/display_cache.c
 USER_C_SOURCES += apps/channels_notify_voice.c
 USER_C_SOURCES += apps/power_manager_group_policy_handler.c
+USER_C_SOURCES += apps/exti.c
 
 USER_C_SOURCES += apps/modules/app/config_utils.c
 USER_C_SOURCES += apps/modules/app/poll_loop.c
@@ -200,6 +201,7 @@ USER_C_SOURCES += apps/modules/os/soft_timer.c
 USER_C_SOURCES += apps/modules/tests/test_serial.c
 USER_C_SOURCES += apps/modules/tests/test_event.c
 USER_C_SOURCES += apps/modules/tests/test_storage.c
+USER_C_SOURCES += apps/modules/tests/test_can.c
 
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
