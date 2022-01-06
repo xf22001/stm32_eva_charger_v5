@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年12月30日 星期四 11时16分03秒
+ *   修改日期：2021年12月30日 星期四 15时14分14秒
  *   描    述：
  *
  *================================================================*/
@@ -431,11 +431,7 @@ void app(void const *argument)
 	//ftpd_init();
 
 	//test_event();
-	test_can(&hcan2, &hspi3);
-
-	while(1) {
-		osDelay(10);
-	}
+	//test_can(&hcan2, &hspi3);
 
 	channels_info = start_channels();
 	OS_ASSERT(channels_info != NULL);

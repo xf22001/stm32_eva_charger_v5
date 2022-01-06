@@ -6,7 +6,7 @@
  *   文件名称：channels_notify_voice.c
  *   创 建 者：肖飞
  *   创建日期：2021年08月03日 星期二 11时23分04秒
- *   修改日期：2021年08月22日 星期日 16时04分19秒
+ *   修改日期：2022年01月06日 星期四 17时08分36秒
  *   描    述：
  *
  *================================================================*/
@@ -218,7 +218,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 		}
 		break;
 
-		case CHANNELS_NOTIFY_CARD_READER_RESULT: {
+		case CHANNELS_NOTIFY_CARD_VERIFY_RESULT: {
 		}
 		break;
 

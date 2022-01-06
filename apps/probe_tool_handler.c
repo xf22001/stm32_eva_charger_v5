@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2021年12月15日 星期三 15时30分56秒
+ *   修改日期：2022年01月06日 星期四 17时08分18秒
  *   描    述：
  *
  *================================================================*/
@@ -566,7 +566,7 @@ static void account_request_cb(void *fn_ctx, void *chain_ctx)
 	channels_notify_ctx_t *channels_notify_ctx = (channels_notify_ctx_t *)chain_ctx;
 
 	switch(channels_notify_ctx->notify) {
-		case CHANNELS_NOTIFY_CARD_READER_RESULT: {
+		case CHANNELS_NOTIFY_CARD_VERIFY_RESULT: {
 			account_response_info_t *account_response_info = (account_response_info_t *)channels_notify_ctx->ctx;
 
 			switch(account_response_info->code) {
