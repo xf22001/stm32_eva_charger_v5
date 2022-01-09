@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2021年12月30日 星期四 15时14分14秒
+ *   修改日期：2022年01月09日 星期日 14时27分21秒
  *   描    述：
  *
  *================================================================*/
@@ -31,6 +31,8 @@
 
 #include "channels.h"
 #include "duty_cycle_pattern.h"
+#include "channels_notify_voice.h"
+#include "vfs.h"
 
 #include "sal_socket.h"
 #include "sal_netdev.h"
