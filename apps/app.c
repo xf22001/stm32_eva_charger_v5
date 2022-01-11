@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年01月09日 星期日 14时27分21秒
+ *   修改日期：2022年01月11日 星期二 15时50分28秒
  *   描    述：
  *
  *================================================================*/
@@ -221,11 +221,12 @@ uint8_t app_get_reset_config(void)
 }
 
 #define CACHE_STORAGE_SECTOR_SIZE 4096
+#define CACHE_STORAGE_MAGIC 0x73
 
 #pragma pack(push, 1)
 typedef struct {
 	uint8_t cache[CACHE_STORAGE_SECTOR_SIZE];
-	uint8_t magic;//0x73
+	uint8_t magic;//CACHE_STORAGE_MAGIC
 	uint32_t addr;
 	uint8_t valid;
 } cache_storage_layout_t;
@@ -305,7 +306,7 @@ static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
 
 			debug("magic %x", magic);
 
-			if(magic == 0x73) {
+			if(magic == CACHE_STORAGE_MAGIC) {
 				offset = (size_t)&cache_storage_layout->valid;
 
 				while(storage_read(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
@@ -332,7 +333,7 @@ static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
 					debug("CACHE_EVENT_ACTION_RESTORE addr:%x", addr);
 				}
 			} else {
-				magic = 0x73;
+				magic = CACHE_STORAGE_MAGIC;
 				offset = (size_t)&cache_storage_layout->magic;
 
 				while(storage_write(storage_info, offset, (uint8_t *)&magic, sizeof(magic)) != 0) {
@@ -438,6 +439,7 @@ void app(void const *argument)
 	channels_info = start_channels();
 	OS_ASSERT(channels_info != NULL);
 
+	ntp_client_add_poll_loop(poll_loop);
 	//net_client_add_poll_loop(poll_loop);
 	//ftp_client_add_poll_loop(poll_loop);
 
