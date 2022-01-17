@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年01月11日 星期二 15时46分56秒
+#   修改日期：2022年01月17日 星期一 09时03分44秒
 #   描    述：
 #
 #================================================================
@@ -208,7 +208,7 @@ USER_C_SOURCES += apps/modules/tests/test_can.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
 USER_C_SOURCES += Src/net_sockets.c
-USER_C_SOURCES += apps/cJSON.c
+USER_C_SOURCES += cJSON/cJSON.c
 
 C_SOURCES += $(USER_C_SOURCES)
 
