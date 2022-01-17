@@ -88,7 +88,7 @@ endif
 ifneq ($(call ifdef_any_of,NET_CLIENT_REQUEST_SSE),)
 USER_C_SOURCES += apps/modules/app/net_client/request_sse.c
 endif
-ifneq ($(call ifdef_any_of,NET_CLIENT_REQUEST_OCCP_1_6),)
+ifneq ($(call ifdef_any_of,NET_CLIENT_REQUEST_OCPP_1_6),)
 USER_C_SOURCES += apps/modules/app/net_client/test_https.c
 USER_C_SOURCES += apps/modules/app/net_client/https.c
 USER_C_SOURCES += apps/modules/app/net_client/websocket.c

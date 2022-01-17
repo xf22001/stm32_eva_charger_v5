@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年01月11日 星期二 15时50分28秒
+ *   修改日期：2022年01月12日 星期三 10时49分20秒
  *   描    述：
  *
  *================================================================*/
@@ -26,6 +26,7 @@
 #include "probe_tool.h"
 #include "net_client.h"
 #include "ftp_client.h"
+#include "ntp_client.h"
 #include "usb_upgrade.h"
 #include "usbh_user_callback.h"
 
@@ -383,7 +384,7 @@ void app(void const *argument)
 	ret = app_load_config();
 
 	if(ret == 0) {
-		debug("app_load_config successful!");
+		debug("app load config successful!");
 		reset_config = app_info->mechine_info.reset_config;
 
 		if(app_get_reset_config() != 0) {
@@ -391,7 +392,7 @@ void app(void const *argument)
 			ret = -1;
 		}
 	} else {
-		debug("app_load_config failed!");
+		debug("app load config failed!");
 	}
 
 	if(ret == 0) {
@@ -406,6 +407,7 @@ void app(void const *argument)
 		app_info->mechine_info.dhcp_enable = 0;
 		app_info->mechine_info.request_type = REQUEST_TYPE_SSE;
 		app_info->mechine_info.reset_config = 0;
+		app_info->mechine_info.tz = 8;
 		app_save_config();
 	}
 
@@ -439,9 +441,9 @@ void app(void const *argument)
 	channels_info = start_channels();
 	OS_ASSERT(channels_info != NULL);
 
-	ntp_client_add_poll_loop(poll_loop);
 	//net_client_add_poll_loop(poll_loop);
 	//ftp_client_add_poll_loop(poll_loop);
+	ntp_client_add_poll_loop(poll_loop);
 
 	display_info = (display_info_t *)channels_info->display_info;
 	OS_ASSERT(display_info != NULL);
