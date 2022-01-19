@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年01月05日 星期三 11时18分28秒
+ *   修改日期：2022年01月19日 星期三 11时04分53秒
  *   描    述：
  *
  *================================================================*/
@@ -647,6 +647,23 @@ static void fn18(request_t *request)
 	start_dump_channels_stats();
 }
 
+#include "pt_temperature.h"
+static void fn19(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int adc = 0;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n", &fn, &adc, &catched);
+
+	if(ret == 2) {
+		float temperature = get_pt_temperature(1000, adc, 4095);
+		debug("adc:%d, temperature:%f", adc, temperature);
+	}
+}
+
 static server_item_t server_map[] = {
 	{1, fn1},
 	{2, fn2},
@@ -666,6 +683,7 @@ static server_item_t server_map[] = {
 	{16, fn16},
 	{17, fn17},
 	{18, fn18},
+	{19, fn19},
 };
 
 server_map_info_t server_map_info = {
