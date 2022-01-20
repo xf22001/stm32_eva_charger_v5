@@ -6,7 +6,7 @@
  *   文件名称：power_manager_group_policy_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年11月30日 星期二 15时07分16秒
- *   修改日期：2021年12月27日 星期一 10时18分39秒
+ *   修改日期：2022年01月20日 星期四 10时09分56秒
  *   描    述：
  *
  *================================================================*/
@@ -110,4 +110,27 @@ power_manager_group_policy_handler_t *get_power_manager_group_policy_handler(uin
 	}
 
 	return power_manager_group_policy_handler;
+}
+
+void power_manager_restore_config(channels_info_t *channels_info)
+{
+	int i;
+	int j;
+
+	channels_config_t *channels_config = channels_info->channels_config;
+	channels_settings_t *channels_settings = &channels_info->channels_settings;
+	power_manager_settings_t *power_manager_settings = &channels_settings->power_manager_settings;
+
+	power_manager_settings->power_manager_group_number = POWER_MANAGER_GROUP_MAX_SIZE;
+
+	for(i = 0; i < power_manager_settings->power_manager_group_number; i++) {
+		power_manager_group_settings_t *power_manager_group_settings = &power_manager_settings->power_manager_group_settings[i];
+		power_manager_group_settings->channel_number = channels_config->channel_number;
+		power_manager_group_settings->power_module_group_number = POWER_MODULE_GROUP_MAX_SIZE;
+
+		for(j = 0; j < power_manager_group_settings->power_module_group_number; j++) {
+			power_module_group_settings_t *power_module_group_settings = &power_manager_group_settings->power_module_group_settings[j];
+			power_module_group_settings->power_module_number = 1;
+		}
+	}
 }

@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2021年07月17日 星期六 22时07分48秒
+ *   修改日期：2022年01月20日 星期四 16时41分23秒
  *   描    述：
  *
  *================================================================*/
@@ -28,14 +28,20 @@ extern "C"
 
 typedef struct {
 	uint8_t ip_sync;
-	uint16_t ip[4];
-	uint16_t port;
+	uint16_t ip[5];
+	uint8_t request_type_sync;
+	uint8_t request_type;
+	uint8_t device_id_sync;
+	uint16_t device_id[16];
 } display_cache_app_t;
 
 typedef struct {
 	uint16_t hour;
 	uint16_t min;
-	uint16_t price;
+	uint16_t price_h;
+	uint16_t price_l;
+	uint16_t service_price_h;
+	uint16_t service_price_l;
 } price_item_cache_t;
 
 typedef struct {
@@ -56,15 +62,18 @@ typedef struct {
 
 typedef struct {
 	uint16_t channel_id;
-	uint16_t account[16];//bcd
 	uint16_t start_hour_min;//bcd
 	uint16_t stop_hour_min;//bcd
+	uint16_t start_soc;
+	uint16_t stop_soc;
 	uint16_t energy_h;
 	uint16_t energy_l;
 	uint16_t amount_h;
 	uint16_t amount_l;
-	uint16_t start_reason;
+	//uint16_t start_reason;
 	uint16_t stop_reason;
+	uint16_t account[16];//bcd
+	uint16_t reserved[24];
 } record_item_cache_t;
 
 #define RECORD_ITEM_CACHE_NUMBER 10
