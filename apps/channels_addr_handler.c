@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年01月20日 星期四 17时08分05秒
+ *   修改日期：2022年01月21日 星期五 15时00分40秒
  *   描    述：
  *
  *================================================================*/
@@ -129,6 +129,7 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 20: {//小时(bcd) 分钟(bcd) 电价(0.0001元) 电价(0.0001元) 服务费(0.0001元) 服务费(0.0001元)
 			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.price_item_cache, 6 * 20 * 2, modbus_data_ctx->addr - 20);
+
 			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
 				channels_info->display_cache_channels.price_sync = 1;
 			}
@@ -199,18 +200,42 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 337 ... 342: {//电表A表号
+			channel_info_t *channel_info = channels_info->channel_info + 0;
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->display_cache_channel.dlt_645_addr, 6 * 2, modbus_data_ctx->addr - 337);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channel_info->display_cache_channel.dlt_645_addr_sync = 1;
+			}
 		}
 		break;
 
 		case 343 ... 348: {//电表B表号
+			channel_info_t *channel_info = channels_info->channel_info + 1;
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->display_cache_channel.dlt_645_addr, 6 * 2, modbus_data_ctx->addr - 337);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channel_info->display_cache_channel.dlt_645_addr_sync = 1;
+			}
 		}
 		break;
 
 		case 349 ... 354: {//电表C表号
+			channel_info_t *channel_info = channels_info->channel_info + 2;
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->display_cache_channel.dlt_645_addr, 6 * 2, modbus_data_ctx->addr - 337);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channel_info->display_cache_channel.dlt_645_addr_sync = 1;
+			}
 		}
 		break;
 
 		case 355 ... 360: {//电表D表号
+			channel_info_t *channel_info = channels_info->channel_info + 3;
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->display_cache_channel.dlt_645_addr, 6 * 2, modbus_data_ctx->addr - 337);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channel_info->display_cache_channel.dlt_645_addr_sync = 1;
+			}
 		}
 		break;
 
@@ -225,18 +250,38 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 377 ... 380: {//静态ip设置
+			app_info_t *app_info = get_app_info();
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.ip, 4 * 2, modbus_data_ctx->addr - 377);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.ip_sync = 1;
+			}
 		}
 		break;
 
 		case 381 ... 384: {//子网掩码
+			app_info_t *app_info = get_app_info();
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.sn, 4 * 2, modbus_data_ctx->addr - 377);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.ip_sync = 1;
+			}
 		}
 		break;
 
 		case 385 ... 388: {//网关
+			app_info_t *app_info = get_app_info();
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.gw, 4 * 2, modbus_data_ctx->addr - 377);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.ip_sync = 1;
+			}
 		}
 		break;
 
 		case 389: {//ip获取设置
+			app_info_t *app_info = get_app_info();
+			modbus_data_value_rw(modbus_data_ctx, app_info->mechine_info.dhcp_enable);
 		}
 		break;
 

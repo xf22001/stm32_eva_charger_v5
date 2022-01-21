@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年01月20日 星期四 16时41分23秒
+ *   修改日期：2022年01月21日 星期五 14时42分51秒
  *   描    述：
  *
  *================================================================*/
@@ -28,7 +28,9 @@ extern "C"
 
 typedef struct {
 	uint8_t ip_sync;
-	uint16_t ip[5];
+	uint16_t ip[4];
+	uint16_t sn[4];
+	uint16_t gw[4];
 	uint8_t request_type_sync;
 	uint8_t request_type;
 	uint8_t device_id_sync;
@@ -96,7 +98,8 @@ typedef struct {
 } display_cache_channels_t;
 
 typedef struct {
-	uint8_t sync;
+	uint8_t dlt_645_addr_sync;
+	uint16_t dlt_645_addr[6];
 } display_cache_channel_t;
 
 #pragma pack(pop)

@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2021年12月27日 星期一 14时12分31秒
+ *   修改日期：2022年01月21日 星期五 15时29分32秒
  *   描    述：
  *
  *================================================================*/
@@ -222,7 +222,7 @@ static channels_config_t channels_config_0 = {
 		.items = card_reader_config_item_sz,
 	},
 	.display_config = {
-		//.huart = &huart6,
+		.huart = &huart6,
 	},
 	.proxy_channel_info = {
 		.hcan = &hcan1,

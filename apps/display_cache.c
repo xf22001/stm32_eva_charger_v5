@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年01月20日 星期四 17时42分31秒
+ *   修改日期：2022年01月21日 星期五 13时36分31秒
  *   描    述：
  *
  *================================================================*/
@@ -273,6 +273,14 @@ void load_channel_display_cache(channel_info_t *channel_info)
 
 void sync_channel_display_cache(channel_info_t *channel_info)
 {
+	if(channel_info->display_cache_channel.dlt_645_addr_sync != 0) {
+		int i;
+		channel_info->display_cache_channel.dlt_645_addr_sync = 0;
+		debug("channel %d set dlt 645 addr", channel_info->channel_id);
+		for(i = 0; i < 6; i++) {
+			debug("[%d]:%04x", i, channel_info->display_cache_channel.dlt_645_addr[i]);
+		}
+	}
 }
 
 int get_channel_record_page_load_item_number(void)
