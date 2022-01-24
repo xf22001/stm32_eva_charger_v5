@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年01月21日 星期五 13时36分31秒
+ *   修改日期：2022年01月22日 星期六 14时42分13秒
  *   描    述：
  *
  *================================================================*/
@@ -115,6 +115,21 @@ void load_app_display_cache(app_info_t *app_info)
 	}
 
 	load_device_id((uint16_t *)app_info->mechine_info.device_id, (uint16_t *)app_info->display_cache_app.device_id, 16);
+
+	{
+		time_t ts = get_time();
+		struct tm tm = *localtime(&ts);
+		u_uint16_bytes_t u_uint16_bytes;
+
+		app_info->display_cache_app.time[0] = get_bcd_from_u8(tm.tm_sec);
+		app_info->display_cache_app.time[1] = get_bcd_from_u8(tm.tm_min);
+		app_info->display_cache_app.time[2] = get_bcd_from_u8(tm.tm_hour);
+		app_info->display_cache_app.time[3] = get_bcd_from_u8(tm.tm_mday);
+		app_info->display_cache_app.time[4] = get_bcd_from_u8(tm.tm_mon + 1);
+		u_uint16_bytes.v = tm.tm_year + 1900;
+		app_info->display_cache_app.time[5] = get_u16_from_u8_lh(get_bcd_from_u8(u_uint16_bytes.s.byte0), get_bcd_from_u8(u_uint16_bytes.s.byte1));
+		app_info->display_cache_app.time[6] = get_bcd_from_u8(tm.tm_wday + 1);
+	}
 }
 
 void sync_app_display_cache(app_info_t *app_info)
@@ -170,6 +185,29 @@ void sync_app_display_cache(app_info_t *app_info)
 		set_device_id((uint16_t *)app_info->mechine_info.device_id, (uint16_t *)app_info->display_cache_app.device_id, 16);
 
 		app_info->mechine_info_invalid = 1;
+	}
+
+	if(app_info->display_cache_app.time_sync != 0) {
+		time_t ts;
+		struct tm tm = {0};
+		u_uint16_bytes_t u_uint16_bytes;
+
+		app_info->display_cache_app.time_sync = 0;
+
+		tm.tm_sec = get_u8_from_bcd(app_info->display_cache_app.time[0]);
+		tm.tm_min = get_u8_from_bcd(app_info->display_cache_app.time[1]);
+		tm.tm_hour = get_u8_from_bcd(app_info->display_cache_app.time[2]);
+		tm.tm_mday = get_u8_from_bcd(app_info->display_cache_app.time[3]);
+		tm.tm_mon = get_u8_from_bcd(app_info->display_cache_app.time[4]) - 1;
+		u_uint16_bytes.v = app_info->display_cache_app.time[5];
+		tm.tm_year = get_u16_from_u8_lh(get_u8_from_bcd(u_uint16_bytes.s.byte0), get_u8_from_bcd(u_uint16_bytes.s.byte1)) - 1900;
+		ts = mktime(&tm);
+
+		if(set_time(ts) == 0) {
+			debug("set time successful!");
+		} else {
+			debug("set time failed!");
+		}
 	}
 }
 
@@ -277,6 +315,7 @@ void sync_channel_display_cache(channel_info_t *channel_info)
 		int i;
 		channel_info->display_cache_channel.dlt_645_addr_sync = 0;
 		debug("channel %d set dlt 645 addr", channel_info->channel_id);
+
 		for(i = 0; i < 6; i++) {
 			debug("[%d]:%04x", i, channel_info->display_cache_channel.dlt_645_addr[i]);
 		}

@@ -6,7 +6,7 @@
  *   文件名称：app.h
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时56分29秒
- *   修改日期：2022年01月12日 星期三 10时33分18秒
+ *   修改日期：2022年01月21日 星期五 17时21分37秒
  *   描    述：
  *
  *================================================================*/
@@ -27,11 +27,13 @@ extern "C"
 #include "callback_chain.h"
 #include "display_cache.h"
 #include "storage.h"
+#include "net_client.h"
 
 #define VER_MAJOR 0
 #define VER_MINOR 0
 #define VER_REV 0
 #define VER_BUILD 0
+#define APP_DEFAULT_REQUEST_TYPE REQUEST_TYPE_SSE
 
 #pragma pack(push, 1)
 

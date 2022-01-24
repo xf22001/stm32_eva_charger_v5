@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年01月21日 星期五 14时42分51秒
+ *   修改日期：2022年01月22日 星期六 14时18分06秒
  *   描    述：
  *
  *================================================================*/
@@ -35,6 +35,8 @@ typedef struct {
 	uint8_t request_type;
 	uint8_t device_id_sync;
 	uint16_t device_id[16];
+	uint16_t time_sync;
+	uint16_t time[7];
 } display_cache_app_t;
 
 typedef struct {

@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年01月21日 星期五 15时00分40秒
+ *   修改日期：2022年01月22日 星期六 14时38分57秒
  *   描    述：
  *
  *================================================================*/
@@ -294,14 +294,17 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 397: {//整机最大输出功率 0.1kW
+			modbus_data_value_rw(modbus_data_ctx, channels_settings->power_threshold);
 		}
 		break;
 
 		case 398: {//电源模块类型      (0:英可瑞协议    1:华为协议  2:国网协议 3:英飞源协议)
+			modbus_data_value_rw(modbus_data_ctx, channels_settings->power_module_settings.power_module_type);
 		}
 		break;
 
 		case 399: {//华为模块基准参考电流 (0.1A)
+			modbus_data_value_rw(modbus_data_ctx, channels_settings->power_module_settings.rate_current);
 		}
 		break;
 
@@ -314,14 +317,28 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2000: {//主控板版本号
+			uint16_t major_min = get_u16_from_u8_lh(get_bcd_from_u8(VER_MINOR), get_bcd_from_u8(VER_MAJOR));
+			debug("major_min:%04x", major_min);
+			modbus_data_value_r(modbus_data_ctx, major_min);
 		}
 		break;
 
 		case 2001: {//主控板扩展版本号
+			uint8_t rev_b0 = get_bcd_from_u8(VER_REV);
+			uint8_t rev_b1 = APP_DEFAULT_REQUEST_TYPE;
+			uint16_t rev = get_u16_from_u8_lh(rev_b0, rev_b1);
+			debug("rev:%04x", rev);
+			modbus_data_value_r(modbus_data_ctx, rev);
 		}
 		break;
 
 		case 2002 ... 2008: {//BCD码 系统时间 秒 分 时 日 月 年 星期
+			app_info_t *app_info = get_app_info();
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.time, 7 * 2, modbus_data_ctx->addr - 2002);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.time_sync = 1;
+			}
 		}
 		break;
 

@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年01月19日 星期三 11时04分53秒
+ *   修改日期：2022年01月22日 星期六 14时41分42秒
  *   描    述：
  *
  *================================================================*/
@@ -460,11 +460,12 @@ static void fn13(request_t *request)
 	             &tm.tm_sec,
 	             &catched);
 	debug("ret:%d", ret);
-	tm.tm_year -= 1900;
-	tm.tm_mon -= 1;
-	ts = mktime(&tm);
 
 	if(ret == 7) {
+		tm.tm_year -= 1900;
+		tm.tm_mon -= 1;
+		ts = mktime(&tm);
+
 		if(set_time(ts) == 0) {
 			debug("set time successful!");
 		} else {
