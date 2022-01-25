@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年01月22日 星期六 14时18分06秒
+ *   修改日期：2022年01月25日 星期二 16时52分04秒
  *   描    述：
  *
  *================================================================*/
@@ -35,8 +35,9 @@ typedef struct {
 	uint8_t request_type;
 	uint8_t device_id_sync;
 	uint16_t device_id[16];
-	uint16_t time_sync;
 	uint16_t time[7];
+	uint8_t set_time_sync;
+	uint16_t set_time[6];
 } display_cache_app_t;
 
 typedef struct {
@@ -97,11 +98,31 @@ typedef struct {
 	record_dt_cache_t record_dt_cache;
 	uint16_t record_load_cmd;
 	record_item_cache_t record_item_cache[RECORD_ITEM_CACHE_NUMBER];
+
+	uint8_t current_channel;
 } display_cache_channels_t;
 
 typedef struct {
 	uint8_t dlt_645_addr_sync;
 	uint16_t dlt_645_addr[6];
+
+	uint8_t charger_start_sync;
+	uint8_t start_reason;
+	uint32_t account_balance;
+	uint16_t start_hour;
+	uint16_t start_min;
+	uint16_t stop_hour;
+	uint16_t stop_min;
+	uint64_t card_id;
+	uint16_t account[16];
+	uint16_t password[16];
+	uint16_t charge_mode;
+	uint16_t charge_amount;
+	uint16_t charge_energy;
+	uint16_t onoff;
+
+	uint8_t energy_meter_type_sync;
+	uint8_t energy_meter_type;
 } display_cache_channel_t;
 
 #pragma pack(pop)

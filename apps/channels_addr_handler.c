@@ -6,13 +6,14 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年01月22日 星期六 14时38分57秒
+ *   修改日期：2022年01月25日 星期二 17时30分37秒
  *   描    述：
  *
  *================================================================*/
 #include "modbus_data_value.h"
 #include "app.h"
 #include "channels.h"
+#include "charger.h"
 #include "display.h"
 #include "power_manager.h"
 
@@ -334,11 +335,24 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 2002 ... 2008: {//BCD码 系统时间 秒 分 时 日 月 年 星期
 			app_info_t *app_info = get_app_info();
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_GET) {
+				time_t ts = get_time();
+				struct tm tm = *localtime(&ts);
+				u_uint16_bytes_t u_uint16_bytes;
+
+				app_info->display_cache_app.time[0] = get_bcd_from_u8(tm.tm_sec);
+				app_info->display_cache_app.time[1] = get_bcd_from_u8(tm.tm_min);
+				app_info->display_cache_app.time[2] = get_bcd_from_u8(tm.tm_hour);
+				app_info->display_cache_app.time[3] = get_bcd_from_u8(tm.tm_mday);
+				app_info->display_cache_app.time[4] = get_bcd_from_u8(tm.tm_mon + 1);
+				u_uint16_bytes.v = tm.tm_year + 1900;
+				app_info->display_cache_app.time[5] = get_u16_from_u8_lh(get_bcd_from_u8(u_uint16_bytes.s.byte0), get_bcd_from_u8(u_uint16_bytes.s.byte1));
+				app_info->display_cache_app.time[6] = get_bcd_from_u8(tm.tm_wday + 1);
+			}
+
 			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.time, 7 * 2, modbus_data_ctx->addr - 2002);
 
-			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
-				app_info->display_cache_app.time_sync = 1;
-			}
 		}
 		break;
 
@@ -347,18 +361,57 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2010 ... 2015: {//BCD码 设置时间 秒 分 时 日 月 年
+			app_info_t *app_info = get_app_info();
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.set_time, 6 * 2, modbus_data_ctx->addr - 2010);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.set_time_sync = 1;
+			}
 		}
 		break;
 
 		case 2016 ... 2031: {//ASCII  密码输入区
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			//net_client_info_t *net_client_info = get_net_client_info();
+			//account_request_info_t account_request_info = {0};
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->display_cache_channel.password, 16 * 2, modbus_data_ctx->addr - 2016);
+
+			//OS_ASSERT(channels_info->display_cache_channels.current_channel < channels_info->channel_number);
+
+			//todo 待确认
+			//if(net_client_info == NULL) {
+			//	account_request_info.account_type = ACCOUNT_TYPE_CARD;
+			//	account_request_info.card_id = card_reader_data->id;
+			//	account_request_info.password = (char *)channel_info->display_cache_channel.password;
+			//	account_request_info.channel_info = channel_info;
+			//	account_request_info.fn = account_request_cb;
+			//	net_client_net_client_ctrl_cmd(net_client_info, NET_CLIENT_CTRL_CMD_QUERY_ACCOUNT, &account_request_info);
+			//} else {
+			//	//无后台刷卡
+			//}
 		}
 		break;
 
 		case 2032: {//网络通信状态
+			int state = 0;
+			net_client_info_t *net_client_info = get_net_client_info();
+
+			if(get_client_state(net_client_info) == CLIENT_CONNECTED) {
+				state = 1;
+			}
+
+			modbus_data_value_r(modbus_data_ctx, state);
 		}
 		break;
 
 		case 2033: {//刷卡板连接状态 0：未连接 1：连接
+			uint16_t status = 1;
+
+			if(get_fault(channels_info->faults, CHANNELS_FAULT_CARD_READER) == 1) {
+				status = 0;
+			}
+
+			modbus_data_value_r(modbus_data_ctx, status);
 		}
 		break;
 
@@ -367,18 +420,26 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2035: {//A相输入电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->va);
 		}
 		break;
 
 		case 2036: {//B相输入电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->vb);
 		}
 		break;
 
 		case 2037: {//C相输入电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->vc);
 		}
 		break;
 
 		case 2038: {//系统运行时间 1分钟
+			uint32_t up_time = osKernelSysTick() / 60000;
+			modbus_data_value_r(modbus_data_ctx, up_time);
 		}
 		break;
 
@@ -387,6 +448,14 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2040: {//系统故障状态
+			int fault = 0;
+
+			//channels faults
+			if(get_first_fault(channels_info->faults) != -1) {
+				fault = 1;
+			}
+
+			modbus_data_value_r(modbus_data_ctx, fault);
 		}
 		break;
 
@@ -395,6 +464,7 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2045: {//控制板温度
+			modbus_data_value_r(modbus_data_ctx, channels_info->temperature);
 		}
 		break;
 
@@ -411,18 +481,41 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2500: {//当前记录条数
+			channel_record_task_info_t *channel_record_task_info = get_or_alloc_channel_record_task_info(0);
+			uint16_t end = channel_record_task_info->channel_record_info.end;
+			uint16_t start = channel_record_task_info->channel_record_info.start;
+			uint16_t value;
+
+			if(end < start) {
+				end += CHANNEL_RECORD_NUMBER;
+			}
+
+			value = end - start;
+			modbus_data_value_r(modbus_data_ctx, value);
 		}
 		break;
 
-		case 2501 ... 2502: {//检索年 月 日
+		case 2501 ... 2503: {//检索年 月 日
+			modbus_data_buffer_rw(modbus_data_ctx, &channels_info->display_cache_channels.record_dt_cache, 3 * 2, modbus_data_ctx->addr - 2501);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channels_info->display_cache_channels.record_sync = 1;
+			}
 		}
 		break;
 
 		case 2504: {//查询确认
+			modbus_data_value_rw(modbus_data_ctx, channels_info->display_cache_channels.record_load_cmd);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channels_info->display_cache_channels.record_sync = 1;
+			}
 		}
 		break;
 
 		case 2505: {//未上传记录数
+			channel_record_task_info_t *channel_record_task_info = get_or_alloc_channel_record_task_info(0);
+			modbus_data_value_r(modbus_data_ctx, channel_record_task_info->finish_state_count);
 		}
 		break;
 
@@ -430,104 +523,179 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		}
 		break;
 
-		case 2550 ... 3049: {//
+		case 2550 ... 3049: {//充电记录数据
 			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.record_item_cache, 50 * 10 * 2, modbus_data_ctx->addr - 906);
 		}
 		break;
 
 		case 3500: {//充电状态 (0:待机  1:准备就绪  2:正在充电)
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->state);
 		}
 		break;
 
 		case 3501: {//充电电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->voltage);
 		}
 		break;
 
 		case 3502: {//充电电流 0.1A
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->current);
 		}
 		break;
 
 		case 3503: {//充电电量 0.001度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.charge_energy));
 		}
 		break;
 
 		case 3504: {//充电电量 0.001度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.charge_energy));
 		}
 		break;
 
 		case 3505: {//充电时间 1分
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->channel_record_item.charge_duration);
 		}
 		break;
 
 		case 3506: {//BMS需求电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->require_voltage);
 		}
 		break;
 
 		case 3507: {//BMS需求电流 0.1A
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->require_current);
 		}
 		break;
 
 		case 3508: {//预付款 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.withholding));
 		}
 		break;
 
 		case 3509: {//预付款 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.withholding));
 		}
 		break;
 
 		case 3510 ... 3525: {//账户ID
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_buffer_rw(modbus_data_ctx, channel_info->channel_record_item.account, 16 * 2, modbus_data_ctx->addr - 3510);
 		}
 		break;
 
 		case 3526: {//账户余额 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.account_balance));
 		}
 		break;
 
 		case 3527: {//账户余额 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.account_balance));
 		}
 		break;
 
 		case 3528: {//消费金额 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.amount));
 		}
 		break;
 
 		case 3529: {//消费金额 0.01元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.amount));
 		}
 		break;
 
 		case 3530: {//当前电价 0.0001元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			price_info_t *price_info_energy = &channels_info->channels_settings.price_info_energy;
+			uint8_t index = get_seg_index_by_ts(get_time());
+			uint32_t price = price_info_energy->price[index];
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(price));
 		}
 		break;
 
 		case 3531: {//当前电价 0.0001元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			price_info_t *price_info_energy = &channels_info->channels_settings.price_info_energy;
+			uint8_t index = get_seg_index_by_ts(get_time());
+			uint32_t price = price_info_energy->price[index];
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(price));
 		}
 		break;
 
 		case 3532: {//服务费率 0.0001元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			price_info_t *price_info_service = &channels_info->channels_settings.price_info_service;
+			uint8_t index = get_seg_index_by_ts(get_time());
+			uint32_t price = price_info_service->price[index];
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(price));
 		}
 		break;
 
 		case 3533: {//服务费率 0.0001元
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			price_info_t *price_info_service = &channels_info->channels_settings.price_info_service;
+			uint8_t index = get_seg_index_by_ts(get_time());
+			uint32_t price = price_info_service->price[index];
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(price));
 		}
 		break;
 
 		case 3534: {//开关机 (0:关机 1:开机)
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_rw(modbus_data_ctx, channel_info->display_cache_channel.onoff);
+			channels_info->display_cache_channels.current_channel = 0;
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				if(channel_info->display_cache_channel.onoff == 0) {
+					channel_info->display_cache_channel.charger_start_sync = 1;
+				} else {
+					if(channels_settings->authorize == 0) {
+						channel_info->display_cache_channel.charger_start_sync = 1;
+						channel_info->display_cache_channel.start_reason = CHANNEL_RECORD_ITEM_START_REASON_MANUAL;
+						channel_info->display_cache_channel.charge_mode = CHANNEL_RECORD_CHARGE_MODE_UNLIMIT;
+					}
+				}
+			}
 		}
 		break;
 
 		case 3535: {//充电剩余时间 1分
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.remain_min);
 		}
 		break;
 
 		case 3536: {//电池当前电量 1%
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.soc);
 		}
 		break;
 
 		case 3537: {//电表电量读数 0.001度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->total_energy));
 		}
 		break;
 
 		case 3538: {//电表电量读数 0.001度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->total_energy));
 		}
 		break;
 
@@ -540,18 +708,40 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 3541 ... 3549: {//当前充电VIN码
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_buffer_rw(modbus_data_ctx, (uint16_t *)channel_info->channel_record_item.vin, 17, modbus_data_ctx->addr - 3541);
 		}
 		break;
 
 		case 3600: {//插枪状态
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+			uint16_t value = 0;
+
+			if(charger_info->charger_connect_state == 1) {
+				if(charger_info->vehicle_relay_state == 0) {
+					value = 1;
+				} else {
+					value = 2;
+				}
+			}
+
+			modbus_data_value_r(modbus_data_ctx, value);
 		}
 		break;
 
 		case 3601: {//电子锁状态
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			channel_config_t *channel_config = channel_info->channel_config;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->charger_lock_state);
 		}
 		break;
 
 		case 3602: {//BMS状态
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->bms_state);
 		}
 		break;
 

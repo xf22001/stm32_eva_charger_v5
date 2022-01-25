@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年01月22日 星期六 14时42分13秒
+ *   修改日期：2022年01月25日 星期二 16时51分38秒
  *   描    述：
  *
  *================================================================*/
@@ -121,15 +121,15 @@ void load_app_display_cache(app_info_t *app_info)
 		struct tm tm = *localtime(&ts);
 		u_uint16_bytes_t u_uint16_bytes;
 
-		app_info->display_cache_app.time[0] = get_bcd_from_u8(tm.tm_sec);
-		app_info->display_cache_app.time[1] = get_bcd_from_u8(tm.tm_min);
-		app_info->display_cache_app.time[2] = get_bcd_from_u8(tm.tm_hour);
-		app_info->display_cache_app.time[3] = get_bcd_from_u8(tm.tm_mday);
-		app_info->display_cache_app.time[4] = get_bcd_from_u8(tm.tm_mon + 1);
+		app_info->display_cache_app.set_time[0] = get_bcd_from_u8(tm.tm_sec);
+		app_info->display_cache_app.set_time[1] = get_bcd_from_u8(tm.tm_min);
+		app_info->display_cache_app.set_time[2] = get_bcd_from_u8(tm.tm_hour);
+		app_info->display_cache_app.set_time[3] = get_bcd_from_u8(tm.tm_mday);
+		app_info->display_cache_app.set_time[4] = get_bcd_from_u8(tm.tm_mon + 1);
 		u_uint16_bytes.v = tm.tm_year + 1900;
-		app_info->display_cache_app.time[5] = get_u16_from_u8_lh(get_bcd_from_u8(u_uint16_bytes.s.byte0), get_bcd_from_u8(u_uint16_bytes.s.byte1));
-		app_info->display_cache_app.time[6] = get_bcd_from_u8(tm.tm_wday + 1);
+		app_info->display_cache_app.set_time[5] = get_u16_from_u8_lh(get_bcd_from_u8(u_uint16_bytes.s.byte0), get_bcd_from_u8(u_uint16_bytes.s.byte1));
 	}
+
 }
 
 void sync_app_display_cache(app_info_t *app_info)
@@ -187,19 +187,19 @@ void sync_app_display_cache(app_info_t *app_info)
 		app_info->mechine_info_invalid = 1;
 	}
 
-	if(app_info->display_cache_app.time_sync != 0) {
+	if(app_info->display_cache_app.set_time_sync != 0) {
 		time_t ts;
 		struct tm tm = {0};
 		u_uint16_bytes_t u_uint16_bytes;
 
-		app_info->display_cache_app.time_sync = 0;
+		app_info->display_cache_app.set_time_sync = 0;
 
-		tm.tm_sec = get_u8_from_bcd(app_info->display_cache_app.time[0]);
-		tm.tm_min = get_u8_from_bcd(app_info->display_cache_app.time[1]);
-		tm.tm_hour = get_u8_from_bcd(app_info->display_cache_app.time[2]);
-		tm.tm_mday = get_u8_from_bcd(app_info->display_cache_app.time[3]);
-		tm.tm_mon = get_u8_from_bcd(app_info->display_cache_app.time[4]) - 1;
-		u_uint16_bytes.v = app_info->display_cache_app.time[5];
+		tm.tm_sec = get_u8_from_bcd(app_info->display_cache_app.set_time[0]);
+		tm.tm_min = get_u8_from_bcd(app_info->display_cache_app.set_time[1]);
+		tm.tm_hour = get_u8_from_bcd(app_info->display_cache_app.set_time[2]);
+		tm.tm_mday = get_u8_from_bcd(app_info->display_cache_app.set_time[3]);
+		tm.tm_mon = get_u8_from_bcd(app_info->display_cache_app.set_time[4]) - 1;
+		u_uint16_bytes.v = app_info->display_cache_app.set_time[5];
 		tm.tm_year = get_u16_from_u8_lh(get_u8_from_bcd(u_uint16_bytes.s.byte0), get_u8_from_bcd(u_uint16_bytes.s.byte1)) - 1900;
 		ts = mktime(&tm);
 
@@ -303,6 +303,27 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 
 		channels_info->channels_settings_invalid = 1;
 	}
+
+	if(channels_info->display_cache_channels.record_sync == 1) {
+		channel_record_task_info_t *channel_record_task_info = get_or_alloc_channel_record_task_info(0);
+
+		channels_info->display_cache_channels.record_sync = 0;
+
+		if(channels_info->display_cache_channels.record_load_cmd == 1) {
+			struct tm tm = {0};
+			uint8_t year_h = get_u8_l_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
+			uint8_t year_l = get_u8_h_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
+
+			tm.tm_year = get_u16_from_bcd_b01(year_l, year_h) - 1900;
+			tm.tm_mon = get_u8_from_bcd(channels_info->display_cache_channels.record_dt_cache.mon) - 1;
+			tm.tm_mday = get_u8_from_bcd(channels_info->display_cache_channels.record_dt_cache.day);
+			channel_record_task_info->page_load_time = mktime(&tm);
+
+			channel_record_item_page_load_location(channel_record_task_info);
+		} else {
+			channel_record_item_page_load_current(channel_record_task_info);
+		}
+	}
 }
 
 void load_channel_display_cache(channel_info_t *channel_info)
@@ -318,6 +339,97 @@ void sync_channel_display_cache(channel_info_t *channel_info)
 
 		for(i = 0; i < 6; i++) {
 			debug("[%d]:%04x", i, channel_info->display_cache_channel.dlt_645_addr[i]);
+		}
+	}
+
+	if(channel_info->display_cache_channel.charger_start_sync == 1) {
+		channel_event_type_t type = CHANNEL_EVENT_TYPE_UNKNOW;
+		channel_event_t *channel_event;
+		channels_event_t *channels_event;
+		channels_info_t *channels_info = (channels_info_t *)channel_info->channels_info;
+
+		channel_info->display_cache_channel.charger_start_sync = 0;
+
+		if(channel_info->display_cache_channel.onoff == 1) {//开机
+			if(channel_info->state != CHANNEL_STATE_IDLE) {
+				debug("");
+				return;
+			}
+
+			channel_info->channel_event_start_display.charge_mode = channel_info->display_cache_channel.charge_mode;
+			channel_info->channel_event_start_display.start_reason = channel_info->display_cache_channel.start_reason;
+			type = CHANNEL_EVENT_TYPE_START_CHANNEL;
+
+			switch(channel_info->display_cache_channel.charge_mode) {
+				case CHANNEL_RECORD_CHARGE_MODE_UNLIMIT: {
+				}
+				break;
+
+				case CHANNEL_RECORD_CHARGE_MODE_DURATION: {
+					struct tm tm;
+					time_t start_ts;
+					time_t stop_ts;
+
+					start_ts = get_time();
+					stop_ts = get_time();
+
+					tm = *localtime(&start_ts);
+					channel_info->channel_event_start_display.start_time = mktime(&tm);
+					tm.tm_hour = get_u8_from_bcd(channel_info->display_cache_channel.start_hour);
+					tm.tm_min = get_u8_from_bcd(channel_info->display_cache_channel.start_min);
+					tm.tm_sec = 0;
+					start_ts = mktime(&tm);
+
+					channel_info->channel_event_start_display.start_time = start_ts;
+
+					tm = *localtime(&stop_ts);
+					tm.tm_hour = get_u8_from_bcd(channel_info->display_cache_channel.stop_hour);
+					tm.tm_min = get_u8_from_bcd(channel_info->display_cache_channel.stop_min);
+					tm.tm_sec = 0;
+					stop_ts = mktime(&tm);
+
+					if(start_ts > stop_ts) {
+						stop_ts += 86400;
+					}
+
+					channel_info->channel_event_start_display.charge_duration = stop_ts - start_ts;
+				}
+				break;
+
+				case CHANNEL_RECORD_CHARGE_MODE_AMOUNT: {
+					channel_info->channel_event_start_display.charge_amount = channel_info->display_cache_channel.charge_amount;
+				}
+				break;
+
+				case CHANNEL_RECORD_CHARGE_MODE_ENERGY: {
+					channel_info->channel_event_start_display.charge_energy = channel_info->display_cache_channel.charge_energy;
+				}
+				break;
+
+				default: {
+
+				}
+				break;
+			}
+		} else {//关机
+			channel_info->channel_event_stop.stop_reason = CHANNEL_RECORD_ITEM_STOP_REASON_MANUAL;
+			type = CHANNEL_EVENT_TYPE_STOP_CHANNEL;
+		}
+
+		channel_event = os_calloc(1, sizeof(channel_event_t));
+		channels_event = os_calloc(1, sizeof(channels_event_t));
+
+		OS_ASSERT(channel_event != NULL);
+		OS_ASSERT(channels_event != NULL);
+
+		channel_event->channel_id = channel_info->channel_id;
+		channel_event->type = type;
+		channel_event->ctx = &channel_info->channel_event_start_display;
+
+		channels_event->type = CHANNELS_EVENT_CHANNEL;
+		channels_event->event = channel_event;
+
+		if(send_channels_event(channels_info, channels_event, 100) != 0) {
 		}
 	}
 }
