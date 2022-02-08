@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年01月25日 星期二 16时51分38秒
+ *   修改日期：2022年02月08日 星期二 08时58分18秒
  *   描    述：
  *
  *================================================================*/
@@ -283,10 +283,10 @@ static void price_seg_to_price_info(channels_settings_t *channels_settings, pric
 			int k = j % PRICE_SEGMENT_SIZE;
 			uint32_t price_energy = get_u32_from_u16_01(item->price_l, item->price_h);
 			uint32_t price_service = get_u32_from_u16_01(item->service_price_l, item->service_price_h);
-			debug("energy price[%d]:%d", k, price_energy / 100);
-			debug("service price[%d]:%d", k, price_service / 100);
-			price_info_energy->price[k] = price_energy / 100;
-			price_info_service->price[k] = price_service / 100;
+			debug("energy price[%d]:%d", k, price_energy);
+			debug("service price[%d]:%d", k, price_service);
+			price_info_energy->price[k] = price_energy;
+			price_info_service->price[k] = price_service;
 		}
 
 		start = stop;
@@ -474,8 +474,8 @@ void channel_record_item_page_item_refresh(channel_record_item_t *channel_record
 	record_item_cache->stop_hour_min = get_u16_from_u8_lh(min, hour);
 	record_item_cache->energy_h = get_u16_1_from_u32(channel_record_item->energy);
 	record_item_cache->energy_l = get_u16_0_from_u32(channel_record_item->energy);
-	record_item_cache->amount_h = get_u16_1_from_u32(channel_record_item->amount);
-	record_item_cache->amount_l = get_u16_0_from_u32(channel_record_item->amount);
+	record_item_cache->amount_h = get_u16_1_from_u32(channel_record_item->amount / 1000000);
+	record_item_cache->amount_l = get_u16_0_from_u32(channel_record_item->amount / 1000000);
 	//record_item_cache->start_reason = get_u16_0_from_u32(channel_record_item->start_reason);
 	record_item_cache->stop_reason = get_u16_0_from_u32(channel_record_item->stop_reason);
 }

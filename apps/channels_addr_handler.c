@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年01月25日 星期二 17时30分37秒
+ *   修改日期：2022年02月08日 星期二 08时58分29秒
  *   描    述：
  *
  *================================================================*/
@@ -608,13 +608,13 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 3528: {//消费金额 0.01元
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.amount));
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.amount / 1000000));
 		}
 		break;
 
 		case 3529: {//消费金额 0.01元
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.amount));
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.amount / 1000000));
 		}
 		break;
 
@@ -746,38 +746,60 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 3603: {//BMS停机原因
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->channel_record_item.stop_reason);
 		}
 		break;
 
 		case 3604: {//充电机停机原因
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->channel_record_item.stop_reason);
 		}
 		break;
 
 		case 3605: {//充电机开机原因
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->channel_record_item.start_reason);
 		}
 		break;
 
 		case 3606: {//绝缘电阻
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->insulation_resistor);
 		}
 		break;
 
 		case 3607: {//绝缘状态
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->insulation_resistor);
 		}
 		break;
 
 		case 3608: {//枪头正极温度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->dc_p_temperature);
 		}
 		break;
 
 		case 3609: {//枪头负极温度
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			modbus_data_value_r(modbus_data_ctx, channel_info->dc_n_temperature);
 		}
 		break;
 
 		case 3610: {//电表连接状态
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			uint8_t fault = get_fault(channel_info->faults, CHANNEL_FAULT_ENERGYMETER);
+
+			modbus_data_value_r(modbus_data_ctx, fault);
 		}
 		break;
 
 		case 3611: {//查找Channel_Err_enum
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			int fault = get_first_fault(channels_info->faults);
+
+			modbus_data_value_r(modbus_data_ctx, fault);
 		}
 		break;
 
@@ -786,50 +808,99 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 3700: {//BMS版本号
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+			uint16_t version = charger_info->bms_data.chm_data.version_0;//todo
+
+			modbus_data_value_r(modbus_data_ctx, version);
 		}
 		break;
 
 		case 3701: {//电池类型 见地址表
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.brm_data.brm_data.battery_type);
 		}
 		break;
 
 		case 3702: {//电池容量 0.1Ah
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.brm_data.brm_data.total_battery_rate_capicity);
 		}
 		break;
 
 		case 3703: {//电池额定总电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.brm_data.brm_data.total_battery_rate_voltage);
 		}
 		break;
 
 		case 3704: {//单体最高允许电压 0.01V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcp_data.max_charge_voltage);
 		}
 		break;
 
 		case 3705: {//单体最高电压 0.01V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.u1.s.single_battery_max_voltage);
 		}
 		break;
 
 		case 3706: {//单体最高允许温度 1° -50偏移量(-50 -- 200)
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcp_data.max_temperature);
 		}
 		break;
 
 		case 3707: {//单体最高温度 1° -50偏移量(-50 -- 200)
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bsm_data.battery_max_temperature);
 		}
 		break;
 
 		case 3708: {//BMS端测量充电电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.charge_voltage);
 		}
 		break;
 
 		case 3709: {//BMS端测量充电电流 0.1A
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.charge_current);
 		}
 		break;
 
 		case 3710: {//电池最大允许充电电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bhm_data.max_charge_voltage);
 		}
 		break;
 
 		case 3711: {//充电前电池电压 0.1V
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcp_data.total_voltage);
 		}
 		break;
 
@@ -846,6 +917,10 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 3753: {//辅助电源选择 (0:none 1:12V 2:24V) 查找AUX_Power_enum
+			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
+			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcp_data.total_voltage);
 		}
 		break;
 
