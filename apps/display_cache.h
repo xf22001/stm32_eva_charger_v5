@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年02月18日 星期五 16时51分39秒
+ *   修改日期：2022年02月18日 星期五 20时18分56秒
  *   描    述：
  *
  *================================================================*/
@@ -110,6 +110,8 @@ typedef struct {
 	record_dt_cache_t record_dt_cache;
 	uint16_t record_load_cmd;
 	record_item_cache_t record_item_cache[RECORD_ITEM_CACHE_NUMBER];
+	uint8_t module_sync;
+	uint8_t module_page;
 	module_item_cache_t module_item_cache[MODULE_ITEM_CACHE_NUMBER];
 
 	uint8_t current_channel;

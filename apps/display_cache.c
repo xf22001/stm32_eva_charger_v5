@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年02月08日 星期二 08时58分18秒
+ *   修改日期：2022年02月18日 星期五 21时45分52秒
  *   描    述：
  *
  *================================================================*/
@@ -15,6 +15,7 @@
 #include "channels.h"
 #include "channel.h"
 #include "net_client.h"
+#include "power_manager.h"
 
 #include "log.h"
 
@@ -211,45 +212,85 @@ void sync_app_display_cache(app_info_t *app_info)
 	}
 }
 
-static int update_price_item_cache(uint8_t i, uint8_t start_seg, uint8_t stop_seg, uint32_t price, void *_price_item_cache)
+static int mark_price_segs(uint8_t i, uint8_t start_seg, uint8_t stop_seg, uint32_t price, void *_seg)
+{
+	uint8_t *seg = (uint8_t *)_seg;
+	seg[start_seg] = 1;
+	return 0;
+}
+
+typedef int (*price_item_seg_cb_t)(uint8_t i, uint8_t start_seg, uint8_t stop_seg, channels_settings_t *channels_settings, void *ctx);
+
+static int parse_price_info_by_segs(channels_settings_t *channels_settings, uint8_t *seg, price_item_seg_cb_t price_item_seg_cb, void *ctx)
+{
+	int i;
+	int j = 0;
+	uint8_t start_seg = 0;
+
+	for(i = 1; i < PRICE_SEGMENT_SIZE; i++) {
+		if(seg[i] != 1) {
+			continue;
+		}
+
+		if(price_item_seg_cb != NULL) {
+			if(price_item_seg_cb(j, start_seg, i, channels_settings, ctx) == 0) {
+				j++;
+			}
+		}
+
+		start_seg = i;
+	}
+
+	if(price_item_seg_cb != NULL) {
+		if(price_item_seg_cb(j, start_seg, i, channels_settings, ctx) == 0) {
+			j++;
+		}
+	}
+
+	return j;
+}
+
+
+int price_item_seg_cb(uint8_t i, uint8_t start_seg, uint8_t stop_seg, channels_settings_t *channels_settings, void *_price_item_cache)
 {
 	int ret = -1;
-	//price_item_cache_t *price_item_cache = (price_item_cache_t *)_price_item_cache;
-	//time_t start;
-	//time_t stop;
-	//struct tm *tm;
+	price_item_cache_t *price_item_cache = (price_item_cache_t *)_price_item_cache;
+	time_t stop;
+	struct tm *tm;
+	price_info_t *price_info_energy = &channels_settings->price_info_energy;
+	price_info_t *price_info_service = &channels_settings->price_info_service;
 
-	//if(i >= 12) {
-	//	debug("");
-	//	return ret;
-	//}
+	if(i >= 12) {
+		debug("");
+		return ret;
+	}
 
-	//start = get_ts_by_seg_index(start_seg);
-	//stop = get_ts_by_seg_index(stop_seg);
+	stop = get_ts_by_seg_index(stop_seg);
 
-	//debug("[%d] start:%d, stop:%d, price:%d", i, start_seg, stop_seg, price);
+	debug("[%d] start:%d, stop:%d, price:%d, service price:%d", i, start_seg, stop_seg, price_info_energy->price[start_seg], price_info_service->price[start_seg]);
 
-	//sse_query_price_item_info += i;
+	price_item_cache += i;
 
-	//tm = localtime(&start);
-	//sse_query_price_item_info->start_hour_min = get_u16_from_u8_lh(
-	//            get_bcd_from_u8(tm->tm_min),
-	//            get_bcd_from_u8(tm->tm_hour));
-	//tm = localtime(&stop);
-	//sse_query_price_item_info->stop_hour_min = get_u16_from_u8_lh(
-	//            get_bcd_from_u8(tm->tm_min),
-	//            get_bcd_from_u8((stop == 0) ? 24 : tm->tm_hour));
+	tm = localtime(&stop);
+	price_item_cache->hour = get_bcd_from_u8((tm->tm_hour != 0) ? tm->tm_hour: 24);
+	price_item_cache->min = get_bcd_from_u8(tm->tm_min);
 
-	//sse_query_price_item_info->price = price;
+	price_item_cache->price_h = get_u16_1_from_u32(price_info_energy->price[start_seg]);
+	price_item_cache->price_l = get_u16_0_from_u32(price_info_energy->price[start_seg]);
+	price_item_cache->service_price_h = get_u16_1_from_u32(price_info_service->price[start_seg]);
+	price_item_cache->service_price_l = get_u16_0_from_u32(price_info_service->price[start_seg]);
 
-	//ret = 0;
+	ret = 0;
 	return ret;
 }
 
 void load_channels_display_cache(channels_info_t *channels_info)
 {
 	channels_settings_t *channels_settings = &channels_info->channels_settings;
-	parse_price_info(&channels_settings->price_info_energy, update_price_item_cache, &channels_info->display_cache_channels.price_item_cache[0]);
+	uint8_t seg[PRICE_SEGMENT_SIZE] = {0};
+	parse_price_info(&channels_settings->price_info_energy, mark_price_segs, &seg[0]);
+	parse_price_info(&channels_settings->price_info_service, mark_price_segs, &seg[0]);
+	parse_price_info_by_segs(channels_settings, &seg[0], price_item_seg_cb, &channels_info->display_cache_channels.price_item_cache[0]);
 }
 
 static void price_seg_to_price_info(channels_settings_t *channels_settings, price_item_cache_t *price_item_cache, uint8_t max_price_seg)
@@ -322,6 +363,34 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 			channel_record_item_page_load_location(channel_record_task_info);
 		} else {
 			channel_record_item_page_load_current(channel_record_task_info);
+		}
+	}
+
+	if(channels_info->display_cache_channels.module_sync == 1) {
+		uint8_t module_page = channels_info->display_cache_channels.module_page;
+		power_manager_info_t *power_manager_info = (power_manager_info_t *)channels_info->power_manager_info;
+		int base_offset = module_page * 10;
+		int i;
+
+		channels_info->display_cache_channels.module_sync = 0;
+
+		for(i = 0; i < MODULE_ITEM_CACHE_NUMBER; i++) {
+			int offset = base_offset + i;
+			module_item_cache_t *module_item_cache = &channels_info->display_cache_channels.module_item_cache[i];
+
+			if(offset < power_manager_info->power_modules_info->power_module_number) {
+				power_module_item_info_t *power_module_item_info = power_manager_info->power_module_item_info + offset;
+
+				module_item_cache->setting_voltage = power_module_item_info->status.setting_output_voltage;
+				module_item_cache->output_voltage = power_module_item_info->status.module_output_voltage;
+				module_item_cache->setting_current = power_module_item_info->status.setting_output_current;
+				module_item_cache->output_current = power_module_item_info->status.module_output_current;
+				module_item_cache->state = power_module_item_info->status.module_status;
+				module_item_cache->group = power_module_item_info->id;
+				module_item_cache->connect_state = power_module_item_info->status.connect_state;
+			} else {
+				memset(module_item_cache, 0, sizeof(module_item_cache_t));
+			}
 		}
 	}
 }
