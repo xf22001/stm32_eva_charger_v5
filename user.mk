@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年01月19日 星期三 10时32分34秒
+#   修改日期：2022年02月18日 星期五 15时30分03秒
 #   描    述：
 #
 #================================================================
@@ -52,6 +52,7 @@ C_INCLUDES += $(USER_C_INCLUDES)
 
 USER_C_SOURCES += apps/os_memory.c
 USER_C_SOURCES += apps/os_random.c
+USER_C_SOURCES += apps/local_time.c
 USER_C_SOURCES += apps/early_sys_callback.c
 USER_C_SOURCES += apps/app.c
 USER_C_SOURCES += apps/uart_debug_handler.c
@@ -100,7 +101,7 @@ USER_C_SOURCES += apps/modules/app/vfs_disk/vfs.c
 USER_C_SOURCES += apps/modules/app/mt_file.c
 USER_C_SOURCES += apps/modules/app/can_data_task.c
 USER_C_SOURCES += apps/modules/app/uart_data_task.c
-USER_C_SOURCES += apps/modules/app/duty_cycle_pattern.c
+#USER_C_SOURCES += apps/modules/app/duty_cycle_pattern.c
 USER_C_SOURCES += apps/modules/app/usbh_user_callback.c
 USER_C_SOURCES += apps/modules/app/early_sys_callback.c
 USER_C_SOURCES += apps/modules/app/connect_state.c
@@ -123,7 +124,9 @@ USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_winline.c
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_zte.c
 USER_C_SOURCES += apps/modules/app/charger/channels.c
 USER_C_SOURCES += apps/modules/app/charger/channel.c
+ifneq ($(call ifdef_any_of,CHARGER_CHANNEL_NATIVE),)
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_native.c
+endif
 ifneq ($(call ifdef_any_of,CHARGER_CHANNEL_PROXY_REMOTE),)
 USER_C_SOURCES += apps/modules/app/charger/channel_handler_proxy_remote.c
 endif
@@ -171,6 +174,7 @@ endif
 USER_C_SOURCES += apps/modules/hardware/flash.c
 USER_C_SOURCES += apps/modules/hardware/dlt_645_master_txrx.c
 USER_C_SOURCES += apps/modules/hardware/hw_adc.c
+USER_C_SOURCES += apps/modules/hardware/hw_rtc.c
 USER_C_SOURCES += apps/modules/hardware/modbus_slave_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_master_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_spec.c

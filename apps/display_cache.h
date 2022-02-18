@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年01月25日 星期二 16时52分04秒
+ *   修改日期：2022年02月18日 星期五 16时51分39秒
  *   描    述：
  *
  *================================================================*/
@@ -81,7 +81,19 @@ typedef struct {
 	uint16_t reserved[24];
 } record_item_cache_t;
 
+typedef struct {
+	uint16_t setting_voltage;//0.1v
+	uint16_t output_voltage;//0.1v
+	uint16_t setting_current;//0.1a
+	uint16_t output_current;//0.1a
+	uint16_t state;//power_module_status_t
+	uint16_t group;
+	uint16_t connect_state;
+	uint16_t unused[3];
+} module_item_cache_t;
+
 #define RECORD_ITEM_CACHE_NUMBER 10
+#define MODULE_ITEM_CACHE_NUMBER 10
 
 typedef struct {
 	uint8_t price_sync;
@@ -98,6 +110,7 @@ typedef struct {
 	record_dt_cache_t record_dt_cache;
 	uint16_t record_load_cmd;
 	record_item_cache_t record_item_cache[RECORD_ITEM_CACHE_NUMBER];
+	module_item_cache_t module_item_cache[MODULE_ITEM_CACHE_NUMBER];
 
 	uint8_t current_channel;
 } display_cache_channels_t;

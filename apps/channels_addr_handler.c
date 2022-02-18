@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年02月08日 星期二 08时58分29秒
+ *   修改日期：2022年02月18日 星期五 17时02分12秒
  *   描    述：
  *
  *================================================================*/
@@ -24,6 +24,12 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 	channels_info_t *channels_info = (channels_info_t *)fn_ctx;
 	channels_settings_t *channels_settings = &channels_info->channels_settings;
 	modbus_data_ctx_t *modbus_data_ctx = (modbus_data_ctx_t *)chain_ctx;
+
+	//debug("op:%s, addr:%d",
+	//      (modbus_data_ctx->action == MODBUS_DATA_ACTION_GET) ? "get" :
+	//      (modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) ? "set" :
+	//      "unknow",
+	//      modbus_data_ctx->addr);
 
 	switch(modbus_data_ctx->addr) {
 		case 0: {//模块个数
@@ -524,7 +530,16 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2550 ... 3049: {//充电记录数据
-			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.record_item_cache, 50 * 10 * 2, modbus_data_ctx->addr - 906);
+			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.record_item_cache, 50 * 10 * 2, modbus_data_ctx->addr - 2550);
+		}
+		break;
+
+		case 3050 ... 3149: {//模块数据
+			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.module_item_cache, 10 * 10 * 2, modbus_data_ctx->addr - 3050);
+		}
+		break;
+
+		case 3150 ... 3349: {
 		}
 		break;
 

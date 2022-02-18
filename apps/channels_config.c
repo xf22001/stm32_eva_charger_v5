@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年01月21日 星期五 15时29分32秒
+ *   修改日期：2022年02月18日 星期五 16时26分03秒
  *   描    述：
  *
  *================================================================*/
@@ -20,6 +20,7 @@ extern SPI_HandleTypeDef hspi3;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart6;
+extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc3;
 
 char *get_channel_config_channel_type_des(channel_type_t type)
@@ -151,6 +152,8 @@ static channel_config_t channel0_config = {
 		.size = ARRAY_SIZE(energy_meter_config_item_0_sz),
 		.items = energy_meter_config_item_0_sz,
 	},
+	.cp_ad_adc = &hadc1,
+	.cp_ad_adc_rank = 1,
 	.auxilary_select_gpio = GPIOI,
 	.auxilary_select_pin = GPIO_PIN_9,
 	.auxilary_output_gpio = GPIOD,
@@ -177,6 +180,8 @@ static channel_config_t channel1_config = {
 		.size = ARRAY_SIZE(energy_meter_config_item_1_sz),
 		.items = energy_meter_config_item_1_sz,
 	},
+	.cp_ad_adc = &hadc1,
+	.cp_ad_adc_rank = 2,
 	.auxilary_select_gpio = GPIOI,
 	.auxilary_select_pin = GPIO_PIN_10,
 	.auxilary_output_gpio = GPIOG,

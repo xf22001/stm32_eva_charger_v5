@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年01月21日 星期五 17时20分58秒
+ *   修改日期：2022年02月18日 星期五 15时52分40秒
  *   描    述：
  *
  *================================================================*/
@@ -31,7 +31,7 @@
 #include "usbh_user_callback.h"
 
 #include "channels.h"
-#include "duty_cycle_pattern.h"
+//#include "duty_cycle_pattern.h"
 #include "channels_notify_voice.h"
 #include "vfs.h"
 
@@ -384,6 +384,7 @@ void app(void const *argument)
 	ret = app_load_config();
 
 	if(ret == 0) {
+		app_info->mechine_info.reset_config = 1;
 		debug("app load config successful!");
 		reset_config = app_info->mechine_info.reset_config;
 
@@ -500,16 +501,39 @@ void app(void const *argument)
 	}
 }
 
-static pattern_state_t work_pattern_state = {
-	.type = PWM_COMPARE_COUNT_UP,
-	.duty_cycle = 0,
-};
+//static pattern_state_t work_pattern_state = {
+//	.type = PWM_COMPARE_COUNT_UP,
+//	.duty_cycle = 0,
+//};
 
 static void update_work_led(void)
 {
 	//计数值小于duty_cycle,输出1;大于duty_cycle输出0
-	uint16_t duty_cycle = get_duty_cycle_pattern(&work_pattern_state, 1000, 0, 20);
+	//uint16_t duty_cycle = get_duty_cycle_pattern(&work_pattern_state, 1000, 0, 20);
 	//__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, duty_cycle);
+}
+
+static uint32_t work_led_blink_periodic = 1000;
+
+void set_work_led_fault_state(uint8_t state)
+{
+	if(state == 1) {
+		work_led_blink_periodic = 125;
+	}
+}
+
+static void blink_work_led()
+{
+	static uint32_t ledcpu_stamp = 0;
+	uint32_t ticks = osKernelSysTick();
+
+	if(ticks_duration(ticks, ledcpu_stamp) < work_led_blink_periodic) {
+		return;
+	}
+
+	ledcpu_stamp = ticks;
+
+	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_12);
 }
 
 void idle(void const *argument)
@@ -520,6 +544,7 @@ void idle(void const *argument)
 	while(1) {
 		//HAL_IWDG_Refresh(&hiwdg);
 		update_work_led();
+		blink_work_led();
 		osDelay(10);
 	}
 }
