@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年02月18日 星期五 21时45分52秒
+ *   修改日期：2022年02月21日 星期一 09时49分50秒
  *   描    述：
  *
  *================================================================*/
@@ -260,7 +260,7 @@ int price_item_seg_cb(uint8_t i, uint8_t start_seg, uint8_t stop_seg, channels_s
 	price_info_t *price_info_energy = &channels_settings->price_info_energy;
 	price_info_t *price_info_service = &channels_settings->price_info_service;
 
-	if(i >= 12) {
+	if(i >= 48) {
 		debug("");
 		return ret;
 	}
@@ -272,7 +272,7 @@ int price_item_seg_cb(uint8_t i, uint8_t start_seg, uint8_t stop_seg, channels_s
 	price_item_cache += i;
 
 	tm = localtime(&stop);
-	price_item_cache->hour = get_bcd_from_u8((tm->tm_hour != 0) ? tm->tm_hour: 24);
+	price_item_cache->hour = get_bcd_from_u8((tm->tm_hour != 0) ? tm->tm_hour : 24);
 	price_item_cache->min = get_bcd_from_u8(tm->tm_min);
 
 	price_item_cache->price_h = get_u16_1_from_u32(price_info_energy->price[start_seg]);
@@ -307,15 +307,17 @@ static void price_seg_to_price_info(channels_settings_t *channels_settings, pric
 		price_item_cache_t *item = price_item_cache + i;
 
 		stop = get_u8_from_bcd(get_u8_l_from_u16(item->hour)) * 3600 + get_u8_from_bcd(get_u8_l_from_u16(item->min)) * 60;
+
+		if(stop == 0) {
+			debug("skip invalid seg %d, hout:%x, min:%x", i, item->hour, item->min);
+			continue;
+		}
+
 		start = get_seg_index_by_ts(start);
 		stop = get_seg_index_by_ts(stop);
 
 		if(start > stop) {
 			stop += PRICE_SEGMENT_SIZE;
-		}
-
-		if(stop == 0) {
-			stop = PRICE_SEGMENT_SIZE;
 		}
 
 		debug("start:%d, stop:%d", (uint32_t)start, (uint32_t)stop);
@@ -340,7 +342,7 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 
 	if(channels_info->display_cache_channels.price_sync != 0) {
 		channels_info->display_cache_channels.price_sync = 0;
-		price_seg_to_price_info(channels_settings, &channels_info->display_cache_channels.price_item_cache[0], 20);
+		price_seg_to_price_info(channels_settings, &channels_info->display_cache_channels.price_item_cache[0], 48);
 
 		channels_info->channels_settings_invalid = 1;
 	}

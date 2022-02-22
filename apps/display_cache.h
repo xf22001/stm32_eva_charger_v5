@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年02月18日 星期五 20时18分56秒
+ *   修改日期：2022年02月21日 星期一 09时41分01秒
  *   描    述：
  *
  *================================================================*/
@@ -97,7 +97,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t price_sync;
-	price_item_cache_t price_item_cache[20];
+	price_item_cache_t price_item_cache[48];
 
 	uint8_t withholding_sync;
 	uint16_t withholding_h;

@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年01月22日 星期六 14时41分42秒
+ *   修改日期：2022年02月22日 星期二 14时33分03秒
  *   描    述：
  *
  *================================================================*/
@@ -665,6 +665,31 @@ static void fn19(request_t *request)
 	}
 }
 
+extern ADC_HandleTypeDef hadc3;
+#include "hw_adc.h"
+static void fn20(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n", &fn, &catched);
+
+	if(ret == 1) {
+		int i;
+
+		for(i = 0; i < 11; i++) {
+			adc_info_t *adc_info;
+			uint16_t ad;
+			adc_info = get_or_alloc_adc_info(&hadc3);
+			OS_ASSERT(adc_info != NULL);
+			ad = get_adc_value(adc_info, i);
+			debug("adc3 rank %d ad:%d", i, ad);
+		}
+	}
+}
+
 static server_item_t server_map[] = {
 	{1, fn1},
 	{2, fn2},
@@ -685,6 +710,7 @@ static server_item_t server_map[] = {
 	{17, fn17},
 	{18, fn18},
 	{19, fn19},
+	{20, fn20},
 };
 
 server_map_info_t server_map_info = {

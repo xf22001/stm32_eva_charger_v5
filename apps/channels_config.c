@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年02月18日 星期五 16时26分03秒
+ *   修改日期：2022年02月22日 星期二 15时58分13秒
  *   描    述：
  *
  *================================================================*/
@@ -17,6 +17,7 @@
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
 extern SPI_HandleTypeDef hspi3;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart6;
@@ -141,6 +142,42 @@ static energy_meter_config_item_t *energy_meter_config_item_0_sz[] = {
 	&energy_meter_config_item_0_0,
 };
 
+function_board_config_item_t function_board_config_item_0_0 = {
+	.type = FUNCTION_BOARD_TYPE_V5,
+	.charge_voltage_adc = &hadc3,
+	.charge_voltage_adc_rank = 2,
+	.battery_voltage_adc = &hadc3,
+	.battery_voltage_adc_rank = 10,
+	.insulation_voltage_adc = &hadc3,
+	.insulation_voltage_adc_rank = 3,
+	.insulation_k1_gpio = GPIOD,
+	.insulation_k1_pin = GPIO_PIN_15,
+	.insulation_k3_gpio = GPIOG,
+	.insulation_k3_pin = GPIO_PIN_3,
+};
+
+function_board_config_item_t *function_board_0_sz[] = {
+	&function_board_config_item_0_0,
+};
+
+function_board_config_item_t function_board_config_item_1_0 = {
+	.type = FUNCTION_BOARD_TYPE_V5,
+	.charge_voltage_adc = &hadc3,
+	.charge_voltage_adc_rank = 6,
+	.battery_voltage_adc = &hadc3,
+	.battery_voltage_adc_rank = 7,
+	.insulation_voltage_adc = &hadc3,
+	.insulation_voltage_adc_rank = 4,
+	.insulation_k1_gpio = GPIOG,
+	.insulation_k1_pin = GPIO_PIN_6,
+	.insulation_k3_gpio = GPIOG,
+	.insulation_k3_pin = GPIO_PIN_7,
+};
+
+function_board_config_item_t *function_board_1_sz[] = {
+	&function_board_config_item_1_0,
+};
+
 static channel_config_t channel0_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
@@ -152,8 +189,18 @@ static channel_config_t channel0_config = {
 		.size = ARRAY_SIZE(energy_meter_config_item_0_sz),
 		.items = energy_meter_config_item_0_sz,
 	},
+	.function_board_config = {
+		.default_type = FUNCTION_BOARD_TYPE_V5,
+		.size = ARRAY_SIZE(function_board_0_sz),
+		.items = function_board_0_sz,
+	},
+	.charger_temperature_p_adc = &hadc3,
+	.charger_temperature_p_adc_rank = 5,
+	.charger_temperature_n_adc = &hadc3,
+	.charger_temperature_n_adc_rank = 9,
+	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
-	.cp_ad_adc_rank = 1,
+	.cp_ad_adc_rank = 0,
 	.auxilary_select_gpio = GPIOI,
 	.auxilary_select_pin = GPIO_PIN_9,
 	.auxilary_output_gpio = GPIOD,
@@ -180,8 +227,18 @@ static channel_config_t channel1_config = {
 		.size = ARRAY_SIZE(energy_meter_config_item_1_sz),
 		.items = energy_meter_config_item_1_sz,
 	},
+	.function_board_config = {
+		.default_type = FUNCTION_BOARD_TYPE_V5,
+		.size = ARRAY_SIZE(function_board_1_sz),
+		.items = function_board_1_sz,
+	},
+	.charger_temperature_p_adc = &hadc3,
+	.charger_temperature_p_adc_rank = 1,
+	.charger_temperature_n_adc = &hadc3,
+	.charger_temperature_n_adc_rank = 0,
+	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
-	.cp_ad_adc_rank = 2,
+	.cp_ad_adc_rank = 1,
 	.auxilary_select_gpio = GPIOI,
 	.auxilary_select_pin = GPIO_PIN_10,
 	.auxilary_output_gpio = GPIOG,
@@ -193,15 +250,15 @@ static channel_config_t *channel_config_sz[] = {
 	&channel1_config,
 };
 
-//static card_reader_config_item_t card_reader_config_item_0 = {
-//	.type = CARD_READER_TYPE_ZLG,
-//	.huart = &huart2,
-//};
-
 static card_reader_config_item_t card_reader_config_item_0 = {
-	.type = CARD_READER_TYPE_PSEUDO,
-	.huart = NULL,
+	.type = CARD_READER_TYPE_ZLG,
+	.huart = &huart1,
 };
+
+//static card_reader_config_item_t card_reader_config_item_0 = {
+//	.type = CARD_READER_TYPE_PSEUDO,
+//	.huart = NULL,
+//};
 
 static card_reader_config_item_t *card_reader_config_item_sz[] = {
 	&card_reader_config_item_0,
@@ -222,7 +279,7 @@ static channels_config_t channels_config_0 = {
 	.voice_config = {
 	},
 	.card_reader_config = {
-		.default_type = CARD_READER_TYPE_PSEUDO,
+		.default_type = CARD_READER_TYPE_ZLG,
 		.size = ARRAY_SIZE(card_reader_config_item_sz),
 		.items = card_reader_config_item_sz,
 	},
@@ -234,6 +291,7 @@ static channels_config_t channels_config_0 = {
 	},
 	.board_temperature_adc = &hadc3,
 	.board_temperature_adc_rank = 8,
+	.board_temperature_type = TEMPERATURE_TYPE_PT_1000,
 };
 
 static channels_config_t *channels_config_sz[] = {

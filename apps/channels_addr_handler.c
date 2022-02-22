@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年02月18日 星期五 17时02分12秒
+ *   修改日期：2022年02月22日 星期二 10时07分44秒
  *   描    述：
  *
  *================================================================*/
@@ -134,8 +134,8 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		}
 		break;
 
-		case 20: {//小时(bcd) 分钟(bcd) 电价(0.0001元) 电价(0.0001元) 服务费(0.0001元) 服务费(0.0001元)
-			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.price_item_cache, 6 * 20 * 2, modbus_data_ctx->addr - 20);
+		case 20 ... 307: {//小时(bcd) 分钟(bcd) 电价(0.0001元) 电价(0.0001元) 服务费(0.0001元) 服务费(0.0001元)
+			modbus_data_buffer_rw(modbus_data_ctx, channels_info->display_cache_channels.price_item_cache, 6 * 48 * 2, modbus_data_ctx->addr - 20);
 
 			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
 				channels_info->display_cache_channels.price_sync = 1;
@@ -733,12 +733,9 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 			uint16_t value = 0;
 
+			debug("charger %d connect state:%d", channel_info->channel_id, charger_info->charger_connect_state);
 			if(charger_info->charger_connect_state == 1) {
-				if(charger_info->vehicle_relay_state == 0) {
-					value = 1;
-				} else {
-					value = 2;
-				}
+				value = 1;
 			}
 
 			modbus_data_value_r(modbus_data_ctx, value);
@@ -935,7 +932,7 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
 			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 
-			modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcp_data.total_voltage);
+			modbus_data_value_r(modbus_data_ctx, channel_info->auxiliary_power_type);
 		}
 		break;
 
