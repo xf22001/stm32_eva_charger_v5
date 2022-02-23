@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年02月18日 星期五 15时52分40秒
+ *   修改日期：2022年02月23日 星期三 20时05分26秒
  *   描    述：
  *
  *================================================================*/
@@ -540,6 +540,11 @@ void idle(void const *argument)
 {
 	//MX_IWDG_Init();
 	//HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
 
 	while(1) {
 		//HAL_IWDG_Refresh(&hiwdg);

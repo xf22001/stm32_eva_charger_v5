@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年02月22日 星期二 15时58分13秒
+ *   修改日期：2022年02月23日 星期三 09时09分32秒
  *   描    述：
  *
  *================================================================*/
@@ -90,6 +90,7 @@ char *get_channel_config_function_board_type_des(function_board_type_t type)
 			add_des_case(FUNCTION_BOARD_TYPE_NONE);
 			add_des_case(FUNCTION_BOARD_TYPE_485);
 			add_des_case(FUNCTION_BOARD_TYPE_MODBUS);
+			add_des_case(FUNCTION_BOARD_TYPE_V5);
 
 		default: {
 		}
