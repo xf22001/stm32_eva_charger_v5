@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年02月23日 星期三 20时05分26秒
+ *   修改日期：2022年02月24日 星期四 08时40分52秒
  *   描    述：
  *
  *================================================================*/
@@ -45,6 +45,7 @@
 #include "log.h"
 
 //extern IWDG_HandleTypeDef hiwdg;
+extern TIM_HandleTypeDef htim1;
 //extern TIM_HandleTypeDef htim2;
 extern UART_HandleTypeDef huart4;
 extern SPI_HandleTypeDef hspi2;
@@ -543,8 +544,8 @@ void idle(void const *argument)
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 500);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 500);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 500);
 
 	while(1) {
 		//HAL_IWDG_Refresh(&hiwdg);
