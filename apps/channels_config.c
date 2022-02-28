@@ -272,7 +272,6 @@ static channels_config_t channels_config_0 = {
 	.channel_number = ARRAY_SIZE(channel_config_sz),
 	.channel_config = channel_config_sz,
 	.power_module_config = {
-		.power_module_number = 0,
 		.hcan = &hcan1,
 		.power_module_default_type = POWER_MODULE_TYPE_PSEUDO,
 	},

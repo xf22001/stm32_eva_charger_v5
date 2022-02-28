@@ -6,16 +6,17 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年02月18日 星期五 15时30分03秒
+#   修改日期：2022年02月28日 星期一 14时50分46秒
 #   描    述：
 #
 #================================================================
 
-include sal/sal.mk
 include config.mk
 
 ifndef_any_of = $(filter undefined,$(foreach v,$(1),$(origin $(addprefix CONFIG_,$(v)))))
 ifdef_any_of = $(filter-out undefined,$(foreach v,$(1),$(origin $(addprefix CONFIG_,$(v)))))
+
+include sal/sal.mk
 
 USER_C_INCLUDES += -Iapps
 USER_C_INCLUDES += -Iapps/modules
@@ -59,7 +60,9 @@ USER_C_SOURCES += apps/uart_debug_handler.c
 USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
 USER_C_SOURCES += apps/can_config.c
+ifneq ($(call ifdef_any_of,SAL_WIZNET),)
 USER_C_SOURCES += apps/wiznet_spi.c
+endif
 USER_C_SOURCES += apps/storage_config.c
 USER_C_SOURCES += apps/channels_addr_handler.c
 USER_C_SOURCES += apps/display_cache.c
@@ -264,7 +267,7 @@ $(build-type) :
 PHONY += all
 PHONY += default
 
-USER_DEPS := config.mk $(build-type) $(LDSCRIPT)
+USER_DEPS := config.mk sal/sal.mk $(build-type) $(LDSCRIPT)
 
 cscope: all
 	rm cscope e_cs -rf

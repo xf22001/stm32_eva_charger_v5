@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年02月24日 星期四 08时40分52秒
+ *   修改日期：2022年02月28日 星期一 15时13分47秒
  *   描    述：
  *
  *================================================================*/
@@ -38,7 +38,11 @@
 #include "sal_socket.h"
 #include "sal_netdev.h"
 #include "sal_netdev.h"
+#if defined(SAL_WIZNET)
 #include "wiz_ethernet.h"
+#elif defined(SAL_DTU)
+#include "dtu_ethernet.h"
+#endif
 #include "display.h"
 #include "sal_hook.h"
 
@@ -416,7 +420,11 @@ void app(void const *argument)
 	load_app_display_cache(app_info);
 
 	sal_init();
+#if defined(SAL_WIZNET)
 	wiz_init();
+#elif defined(SAL_DTU)
+	dtu_init();
+#endif
 
 	poll_loop = get_or_alloc_poll_loop(0);
 	OS_ASSERT(poll_loop != NULL);
