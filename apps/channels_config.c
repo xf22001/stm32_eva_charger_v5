@@ -293,7 +293,7 @@ static channels_config_t channels_config_0 = {
 	},
 	.board_temperature_adc = &hadc3,
 	.board_temperature_adc_rank = 8,
-	.board_temperature_type = TEMPERATURE_TYPE_PT_1000,
+	.board_temperature_type = TEMPERATURE_TYPE_NTC_10000_REF_ADC,
 };
 
 static channels_config_t *channels_config_sz[] = {
