@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年02月25日 星期五 11时23分06秒
+ *   修改日期：2022年03月01日 星期二 15时25分36秒
  *   描    述：
  *
  *================================================================*/
@@ -184,6 +184,10 @@ static channel_config_t channel0_config = {
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
 		.hcan_bms = &hcan2,
+		.charger_auxiliary_power_choose_gpio = GPIOI,
+		.charger_auxiliary_power_choose_pin = GPIO_PIN_9,
+		.charger_auxiliary_power_onoff_gpio = GPIOD,
+		.charger_auxiliary_power_onoff_pin = GPIO_PIN_12,
 	},
 	.energy_meter_config = {
 		.default_type = ENERGY_METER_TYPE_DC,
@@ -203,10 +207,6 @@ static channel_config_t channel0_config = {
 	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
-	.auxilary_select_gpio = GPIOI,
-	.auxilary_select_pin = GPIO_PIN_9,
-	.auxilary_output_gpio = GPIOD,
-	.auxilary_output_pin = GPIO_PIN_12,
 };
 
 static energy_meter_config_item_t energy_meter_config_item_1_0 = {
@@ -223,6 +223,10 @@ static channel_config_t channel1_config = {
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
 		.hcan_bms = &hspi3,
+		.charger_auxiliary_power_choose_gpio = GPIOI,
+		.charger_auxiliary_power_choose_pin = GPIO_PIN_10,
+		.charger_auxiliary_power_onoff_gpio = GPIOG,
+		.charger_auxiliary_power_onoff_pin = GPIO_PIN_11,
 	},
 	.energy_meter_config = {
 		.default_type = ENERGY_METER_TYPE_DC,
@@ -242,10 +246,6 @@ static channel_config_t channel1_config = {
 	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
-	.auxilary_select_gpio = GPIOI,
-	.auxilary_select_pin = GPIO_PIN_10,
-	.auxilary_output_gpio = GPIOG,
-	.auxilary_output_pin = GPIO_PIN_11,
 };
 
 static channel_config_t *channel_config_sz[] = {
@@ -286,7 +286,7 @@ static channels_config_t channels_config_0 = {
 		.items = card_reader_config_item_sz,
 	},
 	.display_config = {
-		.huart = &huart6,
+		//.huart = &huart6,
 	},
 	.proxy_channel_info = {
 		.hcan = &hcan1,
