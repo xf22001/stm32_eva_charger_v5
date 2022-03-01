@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月01日 星期二 15时25分36秒
+ *   修改日期：2022年03月01日 星期二 17时09分08秒
  *   描    述：
  *
  *================================================================*/
@@ -184,6 +184,12 @@ static channel_config_t channel0_config = {
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
 		.hcan_bms = &hcan2,
+		.relay_charger_lock_p_gpio = GPIOD,
+		.relay_charger_lock_p_pin = GPIO_PIN_13,
+		.relay_charger_lock_n_gpio = GPIOD,
+		.relay_charger_lock_n_pin = GPIO_PIN_14,
+		.charger_lock_state_gpio = GPIOG,
+		.charger_lock_state_pin = GPIO_PIN_5,
 		.charger_auxiliary_power_choose_gpio = GPIOI,
 		.charger_auxiliary_power_choose_pin = GPIO_PIN_9,
 		.charger_auxiliary_power_onoff_gpio = GPIOD,
@@ -223,6 +229,12 @@ static channel_config_t channel1_config = {
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
 		.hcan_bms = &hspi3,
+		.relay_charger_lock_p_gpio = GPIOG,
+		.relay_charger_lock_p_pin = GPIO_PIN_12,
+		.relay_charger_lock_n_gpio = GPIOG,
+		.relay_charger_lock_n_pin = GPIO_PIN_13,
+		.charger_lock_state_gpio = GPIOG,
+		.charger_lock_state_pin = GPIO_PIN_14,
 		.charger_auxiliary_power_choose_gpio = GPIOI,
 		.charger_auxiliary_power_choose_pin = GPIO_PIN_10,
 		.charger_auxiliary_power_onoff_gpio = GPIOG,
