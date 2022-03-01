@@ -273,7 +273,7 @@ static channels_config_t channels_config_0 = {
 	.channel_config = channel_config_sz,
 	.power_module_config = {
 		.hcan = &hcan1,
-		.power_module_default_type = POWER_MODULE_TYPE_PSEUDO,
+		.power_module_default_type = POWER_MODULE_TYPE_WINLINE,
 	},
 	.power_manager_config = {
 		.power_manager_default_type = POWER_MANAGER_TYPE_NATIVE,

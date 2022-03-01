@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年02月22日 星期二 14时33分03秒
+ *   修改日期：2022年03月01日 星期二 09时10分10秒
  *   描    述：
  *
  *================================================================*/
@@ -674,7 +674,7 @@ static void fn20(request_t *request)
 	int catched;
 	int ret;
 
-	ret = sscanf(content, "%d %d %n", &fn, &catched);
+	ret = sscanf(content, "%d %n", &fn, &catched);
 
 	if(ret == 1) {
 		int i;
@@ -687,6 +687,32 @@ static void fn20(request_t *request)
 			ad = get_adc_value(adc_info, i);
 			debug("adc3 rank %d ad:%d", i, ad);
 		}
+	}
+}
+
+static void fn21(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel;
+	int voltage;
+	int current;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %d %d %n", &fn, &channel, &voltage, &current, &catched);
+
+	if(ret == 4) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel;
+
+		if(channel >= channels_info->channel_number) {
+			debug("invalid channel %d", channel);
+			return;
+		}
+
+		channel_info->require_voltage = voltage;
+		channel_info->require_current = current;
 	}
 }
 
@@ -711,6 +737,7 @@ static server_item_t server_map[] = {
 	{18, fn18},
 	{19, fn19},
 	{20, fn20},
+	{21, fn21},
 };
 
 server_map_info_t server_map_info = {
