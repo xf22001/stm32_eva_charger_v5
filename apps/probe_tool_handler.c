@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年03月01日 星期二 09时10分10秒
+ *   修改日期：2022年03月02日 星期三 13时07分20秒
  *   描    述：
  *
  *================================================================*/
@@ -25,6 +25,9 @@
 #include "channels.h"
 #include "card_reader.h"
 #include "power_manager.h"
+
+#include "charger.h"
+#include "function_board.h"
 
 #include "sal_hook.h"
 
@@ -716,6 +719,68 @@ static void fn21(request_t *request)
 	}
 }
 
+static void fn22(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel;
+	int lock;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %d %n", &fn, &channel, &lock, &catched);
+
+	if(ret == 3) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel;
+		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+		if(lock != 0) {
+			charger_info->charger_lock_action_request = 1;
+		} else {
+			charger_info->charger_lock_action_request = 2;
+		}
+
+	}
+}
+
+static void fn23(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n", &fn, &channel, &catched);
+
+	if(ret == 2) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel;
+		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+
+		debug("channel %d lock state %d", channel, charger_info->charger_lock_state);
+	}
+}
+
+static void fn24(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n", &fn, &channel, &catched);
+
+	if(ret == 2) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel;
+		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
+		function_board_insulation_detect(charger_info);
+	}
+}
+
 static server_item_t server_map[] = {
 	{1, fn1},
 	{2, fn2},
@@ -738,6 +803,9 @@ static server_item_t server_map[] = {
 	{19, fn19},
 	{20, fn20},
 	{21, fn21},
+	{22, fn22},
+	{23, fn23},
+	{24, fn24},
 };
 
 server_map_info_t server_map_info = {

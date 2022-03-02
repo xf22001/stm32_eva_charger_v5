@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月01日 星期二 17时09分08秒
+ *   修改日期：2022年03月02日 星期三 10时14分22秒
  *   描    述：
  *
  *================================================================*/
@@ -183,6 +183,10 @@ static channel_config_t channel0_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
+		.output_relay_gpio = GPIOD,
+		.output_relay_pin = GPIO_PIN_11,
+		.output_relay_gpio_fb = GPIOG,
+		.output_relay_pin_fb = GPIO_PIN_4,
 		.hcan_bms = &hcan2,
 		.relay_charger_lock_p_gpio = GPIOD,
 		.relay_charger_lock_p_pin = GPIO_PIN_13,
@@ -228,6 +232,10 @@ static channel_config_t channel1_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
+		.output_relay_gpio = GPIOG,
+		.output_relay_pin = GPIO_PIN_9,
+		.output_relay_gpio_fb = GPIOG,
+		.output_relay_pin_fb = GPIO_PIN_10,
 		.hcan_bms = &hspi3,
 		.relay_charger_lock_p_gpio = GPIOG,
 		.relay_charger_lock_p_pin = GPIO_PIN_12,
