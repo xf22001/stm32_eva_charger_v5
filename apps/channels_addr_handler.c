@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年02月22日 星期二 10时07分44秒
+ *   修改日期：2022年03月03日 星期四 11时47分33秒
  *   描    述：
  *
  *================================================================*/
@@ -704,13 +704,13 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 3537: {//电表电量读数 0.001度
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->total_energy));
+			modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->total_energy / 10));
 		}
 		break;
 
 		case 3538: {//电表电量读数 0.001度
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->total_energy));
+			modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->total_energy / 10));
 		}
 		break;
 
