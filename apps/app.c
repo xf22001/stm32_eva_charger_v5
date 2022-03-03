@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年02月28日 星期一 15时13分47秒
+ *   修改日期：2022年03月03日 星期四 14时08分56秒
  *   描    述：
  *
  *================================================================*/
@@ -290,7 +290,7 @@ static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
 				debug("");
 			}
 
-			debug("CACHE_EVENT_ACTION_UPDATE addr:%x, start:%d, size:%d", addr, start, size);
+			debug("CACHE_EVENT_ACTION_UPDATE addr:0x%x, start:%d, size:%d", addr, start, size);
 
 			mutex_unlock(storage_info->action_mutex);
 		}
@@ -389,7 +389,7 @@ void app(void const *argument)
 	ret = app_load_config();
 
 	if(ret == 0) {
-		app_info->mechine_info.reset_config = 1;
+		//app_info->mechine_info.reset_config = 1;
 		debug("app load config successful!");
 		reset_config = app_info->mechine_info.reset_config;
 
@@ -506,7 +506,7 @@ void app(void const *argument)
 
 		handle_open_log();
 		handle_usb_upgrade();
-		sync_storage_w25q256(app_info->storage_info);
+		//sync_storage_w25q256(app_info->storage_info);
 	}
 }
 
