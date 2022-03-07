@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年03月02日 星期三 13时07分20秒
+ *   修改日期：2022年03月07日 星期一 11时47分27秒
  *   描    述：
  *
  *================================================================*/
@@ -781,6 +781,51 @@ static void fn24(request_t *request)
 	}
 }
 
+static void fn25(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int channel;
+	int state;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %d %n", &fn, &channel, &state, &catched);
+
+	if(ret == 3) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel;
+		channel_config_t *channel_config = channel_info->channel_config;
+
+		if(channel_config->charger_config.output_relay_gpio != NULL) {
+			if(state == 0) {
+				HAL_GPIO_WritePin(channel_config->charger_config.output_relay_gpio, channel_config->charger_config.output_relay_pin, GPIO_PIN_RESET);
+			} else {
+				HAL_GPIO_WritePin(channel_config->charger_config.output_relay_gpio, channel_config->charger_config.output_relay_pin, GPIO_PIN_SET);
+			}
+		}
+	}
+}
+
+static void fn26(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int state;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n", &fn, &state, &catched);
+
+	if(ret == 2) {
+		if(state == 0) {
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+		} else {
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+		}
+	}
+}
+
 static server_item_t server_map[] = {
 	{1, fn1},
 	{2, fn2},
@@ -806,6 +851,8 @@ static server_item_t server_map[] = {
 	{22, fn22},
 	{23, fn23},
 	{24, fn24},
+	{25, fn25},
+	{26, fn26},
 };
 
 server_map_info_t server_map_info = {

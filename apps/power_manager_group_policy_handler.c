@@ -6,7 +6,7 @@
  *   文件名称：power_manager_group_policy_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年11月30日 星期二 15时07分16秒
- *   修改日期：2022年02月28日 星期一 16时24分59秒
+ *   修改日期：2022年03月07日 星期一 14时23分54秒
  *   描    述：
  *
  *================================================================*/
@@ -249,23 +249,75 @@ static channel_power_module_group_bind_item_info_t *get_channel_power_module_gro
 }
 
 typedef struct {
+	uint8_t group_id;
 	bitmap_t *relay_map;//链式搭接开关状态位
+	callback_item_t periodic_callback_item;
+	uint32_t adhe_relay_gpio_alive_stamps;
 } power_manager_group_policy_ctx_t;
+
+static void _periodic(void *fn_ctx, void *chain_ctx)
+{
+	power_manager_group_policy_ctx_t *power_manager_group_policy_ctx = (power_manager_group_policy_ctx_t *)fn_ctx;
+	channels_info_t *channels_info = (channels_info_t *)chain_ctx;
+	power_manager_info_t *power_manager_info = (power_manager_info_t *)channels_info->power_manager_info;
+	power_manager_group_info_t *power_manager_group_info = power_manager_info->power_manager_group_info + power_manager_group_policy_ctx->group_id;
+
+	bitmap_t *relay_map = power_manager_group_policy_ctx->relay_map;
+	uint32_t ticks = osKernelSysTick();
+	uint8_t adhe_state = 0;
+	uint8_t fault = 0;
+	int i;
+
+	if(power_manager_group_info->change_state != POWER_MANAGER_CHANGE_STATE_IDLE) {
+		return;
+	}
+
+	for(i = 0; i < relay_map->size; i++) {
+		if(get_bitmap_value(relay_map, i) == 0) {
+			relay_node_info_t *relay_node_info = get_relay_node_info_by_relay_id(power_manager_group_policy_ctx->group_id, i);
+
+			OS_ASSERT(relay_node_info->gpio_port_fb == GPIOF);
+			OS_ASSERT(relay_node_info->gpio_pin_fb == GPIO_PIN_11);
+			GPIO_PinState state = HAL_GPIO_ReadPin(relay_node_info->gpio_port_fb, relay_node_info->gpio_pin_fb);
+
+			if(state == GPIO_PIN_SET) {
+				adhe_state = 1;
+			}
+		}
+	}
+
+	if(adhe_state == 0) {
+		power_manager_group_policy_ctx->adhe_relay_gpio_alive_stamps = ticks;
+	}
+
+	if(ticks_duration(ticks, power_manager_group_policy_ctx->adhe_relay_gpio_alive_stamps) >= 1000) {
+		fault = 1;
+	}
+
+	if(get_fault(channels_info->faults, CHANNELS_FAULT_RELAY_ADHESION) != fault) {
+		set_fault(channels_info->faults, CHANNELS_FAULT_RELAY_ADHESION, fault);
+	}
+}
 
 static int _init(void *_power_manager_info)
 {
 	int ret = 0;
 	int i;
 	power_manager_info_t *power_manager_info = (power_manager_info_t *)_power_manager_info;
-	//channels_info_t *channels_info = power_manager_info->channels_info;
+	channels_info_t *channels_info = power_manager_info->channels_info;
 	power_manager_info->power_manager_group_policy_ctx = (power_manager_group_policy_ctx_t *)os_calloc(power_manager_info->power_manager_group_number, sizeof(power_manager_group_policy_ctx_t));
 	OS_ASSERT(power_manager_info->power_manager_group_policy_ctx != NULL);
 
 	for(i = 0; i < power_manager_info->power_manager_group_number; i++) {
 		power_manager_group_relay_info_t *power_manager_group_relay_info = relay_info.power_manager_group_relay_info[i];
 		power_manager_group_policy_ctx_t *power_manager_group_policy_ctx = (power_manager_group_policy_ctx_t *)power_manager_info->power_manager_group_policy_ctx + i;
+		power_manager_group_policy_ctx->group_id = i;
 		power_manager_group_policy_ctx->relay_map = alloc_bitmap(power_manager_group_relay_info->size);
 		OS_ASSERT(power_manager_group_policy_ctx->relay_map != NULL);
+
+		power_manager_group_policy_ctx->periodic_callback_item.fn = _periodic;
+		power_manager_group_policy_ctx->periodic_callback_item.fn_ctx = power_manager_group_policy_ctx;
+		OS_ASSERT(register_callback(channels_info->common_periodic_chain, &power_manager_group_policy_ctx->periodic_callback_item) == 0);
 	}
 
 	return ret;
@@ -276,15 +328,18 @@ static int _deinit(void *_power_manager_info)
 	int ret = 0;
 	int i;
 	power_manager_info_t *power_manager_info = (power_manager_info_t *)_power_manager_info;
-	//channels_info_t *channels_info = power_manager_info->channels_info;
+	channels_info_t *channels_info = power_manager_info->channels_info;
 
 	OS_ASSERT(power_manager_info->power_manager_group_policy_ctx != NULL);
 
 	for(i = 0; i < power_manager_info->power_manager_group_number; i++) {
 		power_manager_group_policy_ctx_t *power_manager_group_policy_ctx = (power_manager_group_policy_ctx_t *)power_manager_info->power_manager_group_policy_ctx + i;
+		remove_callback(channels_info->common_periodic_chain, &power_manager_group_policy_ctx->periodic_callback_item);
 		OS_ASSERT(power_manager_group_policy_ctx->relay_map != NULL);
 		free_bitmap(power_manager_group_policy_ctx->relay_map);
 	}
+
+	os_free(power_manager_info->power_manager_group_policy_ctx);
 
 	return ret;
 }

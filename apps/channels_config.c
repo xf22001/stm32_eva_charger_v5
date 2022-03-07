@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月02日 星期三 10时14分22秒
+ *   修改日期：2022年03月07日 星期一 14时59分33秒
  *   描    述：
  *
  *================================================================*/
@@ -137,6 +137,8 @@ char *get_power_manager_type_des(power_manager_type_t type)
 static energy_meter_config_item_t energy_meter_config_item_0_0 = {
 	.type = ENERGY_METER_TYPE_DC,
 	.huart = &huart4,
+	.led_gpio = GPIOE,
+	.led_pin = GPIO_PIN_13,
 };
 
 static energy_meter_config_item_t *energy_meter_config_item_0_sz[] = {
@@ -217,11 +219,19 @@ static channel_config_t channel0_config = {
 	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
+	.adhe_p_gpio = GPIOG,
+	.adhe_p_pin = GPIO_PIN_4,
+	.adhe_n_gpio = GPIOG,
+	.adhe_n_pin = GPIO_PIN_4,
+	//.fault_port = GPIOI,
+	//.fault_pin = GPIO_PIN_8,
 };
 
 static energy_meter_config_item_t energy_meter_config_item_1_0 = {
 	.type = ENERGY_METER_TYPE_DC,
 	.huart = &huart3,
+	.led_gpio = GPIOE,
+	.led_pin = GPIO_PIN_14,
 };
 
 static energy_meter_config_item_t *energy_meter_config_item_1_sz[] = {
@@ -266,6 +276,12 @@ static channel_config_t channel1_config = {
 	.charger_temperature_type = TEMPERATURE_TYPE_PT_1000,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
+	.adhe_p_gpio = GPIOG,
+	.adhe_p_pin = GPIO_PIN_10,
+	.adhe_n_gpio = GPIOG,
+	.adhe_n_pin = GPIO_PIN_10,
+	//.fault_port = GPIOF,
+	//.fault_pin = GPIO_PIN_0,
 };
 
 static channel_config_t *channel_config_sz[] = {
@@ -314,6 +330,8 @@ static channels_config_t channels_config_0 = {
 	.board_temperature_adc = &hadc3,
 	.board_temperature_adc_rank = 8,
 	.board_temperature_type = TEMPERATURE_TYPE_NTC_10000_REF_ADC,
+	.fault_port = GPIOI,
+	.fault_pin = GPIO_PIN_8,
 };
 
 static channels_config_t *channels_config_sz[] = {
