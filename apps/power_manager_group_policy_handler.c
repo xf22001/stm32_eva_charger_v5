@@ -6,7 +6,7 @@
  *   文件名称：power_manager_group_policy_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年11月30日 星期二 15时07分16秒
- *   修改日期：2022年03月07日 星期一 14时23分54秒
+ *   修改日期：2022年03月07日 星期一 15时37分40秒
  *   描    述：
  *
  *================================================================*/
@@ -269,6 +269,7 @@ static void _periodic(void *fn_ctx, void *chain_ctx)
 	int i;
 
 	if(power_manager_group_info->change_state != POWER_MANAGER_CHANGE_STATE_IDLE) {
+		power_manager_group_policy_ctx->adhe_relay_gpio_alive_stamps = ticks;
 		return;
 	}
 
