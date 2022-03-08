@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月07日 星期一 14时59分33秒
+ *   修改日期：2022年03月08日 星期二 17时09分27秒
  *   描    述：
  *
  *================================================================*/
@@ -225,6 +225,10 @@ static channel_config_t channel0_config = {
 	.adhe_n_pin = GPIO_PIN_4,
 	//.fault_port = GPIOI,
 	//.fault_pin = GPIO_PIN_8,
+	.led_charge_port = GPIOF,
+	.led_charge_pin = GPIO_PIN_1,
+	.led_full_port = GPIOE,
+	.led_full_pin = GPIO_PIN_5,
 };
 
 static energy_meter_config_item_t energy_meter_config_item_1_0 = {
@@ -282,6 +286,10 @@ static channel_config_t channel1_config = {
 	.adhe_n_pin = GPIO_PIN_10,
 	//.fault_port = GPIOF,
 	//.fault_pin = GPIO_PIN_0,
+	.led_charge_port = GPIOI,
+	.led_charge_pin = GPIO_PIN_11,
+	.led_full_port = GPIOE,
+	.led_full_pin = GPIO_PIN_6,
 };
 
 static channel_config_t *channel_config_sz[] = {
