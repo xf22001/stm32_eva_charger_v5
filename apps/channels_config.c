@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月08日 星期二 17时09分27秒
+ *   修改日期：2022年03月09日 星期三 15时28分15秒
  *   描    述：
  *
  *================================================================*/
@@ -338,6 +338,11 @@ static channels_config_t channels_config_0 = {
 	.board_temperature_adc = &hadc3,
 	.board_temperature_adc_rank = 8,
 	.board_temperature_type = TEMPERATURE_TYPE_NTC_10000_REF_ADC,
+	.fan_port = GPIOG,
+	.fan_pin = GPIO_PIN_1,
+	.door_port = GPIOE,
+	.door_pin = GPIO_PIN_7,
+	.door_normal_state = GPIO_PIN_RESET,
 	.fault_port = GPIOI,
 	.fault_pin = GPIO_PIN_8,
 };
