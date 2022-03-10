@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年03月09日 星期三 17时08分02秒
+ *   修改日期：2022年03月10日 星期四 08时51分43秒
  *   描    述：
  *
  *================================================================*/
@@ -839,11 +839,9 @@ static void fn27(request_t *request)
 	if(ret == 2) {
 		if(state == 0) {
 			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_11, GPIO_PIN_RESET);
 			debug("");
 		} else {
 			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_11, GPIO_PIN_SET);
 			debug("");
 		}
 	}
