@@ -6,7 +6,7 @@
  *   文件名称：display_cache.h
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分47秒
- *   修改日期：2022年02月21日 星期一 09时41分01秒
+ *   修改日期：2022年03月18日 星期五 17时33分23秒
  *   描    述：
  *
  *================================================================*/
@@ -19,10 +19,6 @@ extern "C"
 
 #include "app_platform.h"
 #include "cmsis_os.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 #pragma pack(push, 1)
 
@@ -141,5 +137,9 @@ typedef struct {
 } display_cache_channel_t;
 
 #pragma pack(pop)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //_DISPLAY_CACHE_H

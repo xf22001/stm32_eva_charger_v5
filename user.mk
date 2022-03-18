@@ -49,7 +49,6 @@ USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include/compat/posix/sys
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include/compat/stdc
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/system/arch
 
-C_INCLUDES += $(USER_C_INCLUDES)
 
 USER_C_SOURCES += apps/os_memory.c
 USER_C_SOURCES += apps/os_random.c
@@ -208,6 +207,8 @@ USER_C_SOURCES += apps/modules/os/cpu_utils.c
 USER_C_SOURCES += apps/modules/os/log.c
 USER_C_SOURCES += apps/modules/os/object_class.c
 USER_C_SOURCES += apps/modules/os/soft_timer.c
+USER_C_SOURCES += apps/modules/os/cxx/retarget.c
+USER_C_SOURCES += apps/modules/os/cxx/syscalls.c
 USER_C_SOURCES += apps/modules/tests/test_serial.c
 USER_C_SOURCES += apps/modules/tests/test_event.c
 USER_C_SOURCES += apps/modules/tests/test_storage.c
@@ -218,7 +219,6 @@ USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
 USER_C_SOURCES += Src/net_sockets.c
 USER_C_SOURCES += cJSON/cJSON.c
 
-C_SOURCES += $(USER_C_SOURCES)
 
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
 USER_CFLAGS += -DSAL_HOOK

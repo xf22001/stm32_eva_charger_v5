@@ -46,6 +46,9 @@ CONFIG_LIST += SAL_WIZNET
 
 CONFIG_LIST += SPI_CAN
 
+CONFIG_LIST += ENABLE_CXX
+
+
 $(foreach config_item,$(CONFIG_LIST),$(eval $(addprefix CONFIG_,$(config_item)) := $(config_item)))
 
 CONFIG_CFLAGS := $(addprefix -D,$(CONFIG_LIST))

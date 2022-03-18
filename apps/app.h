@@ -6,7 +6,7 @@
  *   文件名称：app.h
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时56分29秒
- *   修改日期：2022年01月21日 星期五 17时21分37秒
+ *   修改日期：2022年03月18日 星期五 17时32分58秒
  *   描    述：
  *
  *================================================================*/
@@ -15,10 +15,6 @@
 #ifdef __cplusplus
 extern "C"
 {
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #include "app_platform.h"
@@ -89,5 +85,9 @@ void app_set_reset_config(void);
 uint8_t app_get_reset_config(void);
 void app(void const *argument);
 void idle(void const *argument);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //_APP_H
