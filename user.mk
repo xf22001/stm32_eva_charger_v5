@@ -219,7 +219,6 @@ USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c
 USER_C_SOURCES += Src/net_sockets.c
 USER_C_SOURCES += cJSON/cJSON.c
 
-
 USER_CFLAGS += -DtraceTASK_SWITCHED_IN=StartIdleMonitor -DtraceTASK_SWITCHED_OUT=EndIdleMonitor
 USER_CFLAGS += -DSAL_HOOK
 USER_CFLAGS += -DLOG_CONFIG_FILE=\"log_config.h\"
@@ -237,11 +236,11 @@ default: all
 
 IAP_FILE := apps/modules/os/iap.h
 
-define update-iap-include
-	if [ -f $(IAP_FILE) ]; then
-		touch $(IAP_FILE);
-	fi
-endef
+#define update-iap-include
+#	if [ -f $(IAP_FILE) ]; then
+#		touch $(IAP_FILE);
+#	fi
+#endef
 
 ifneq ($(call ifdef_any_of,USER_APP),)
 build-type := .app.stamps
