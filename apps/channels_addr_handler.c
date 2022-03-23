@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年03月03日 星期四 11时47分33秒
+ *   修改日期：2022年03月23日 星期三 11时14分50秒
  *   描    述：
  *
  *================================================================*/
@@ -16,6 +16,7 @@
 #include "charger.h"
 #include "display.h"
 #include "power_manager.h"
+#include "net_client.h"
 
 #include "log.h"
 
@@ -331,8 +332,8 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case 2001: {//主控板扩展版本号
-			uint8_t rev_b0 = get_bcd_from_u8(VER_REV);
-			uint8_t rev_b1 = APP_DEFAULT_REQUEST_TYPE;
+			uint8_t rev_b0 = get_bcd_from_u8(VER_MINOR);
+			uint8_t rev_b1 = get_bcd_from_u8(VER_MAJOR);
 			uint16_t rev = get_u16_from_u8_lh(rev_b0, rev_b1);
 			debug("rev:%04x", rev);
 			modbus_data_value_r(modbus_data_ctx, rev);

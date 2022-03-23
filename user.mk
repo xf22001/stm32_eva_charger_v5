@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年02月28日 星期一 14时50分46秒
+#   修改日期：2022年03月23日 星期三 11时20分25秒
 #   描    述：
 #
 #================================================================
@@ -23,8 +23,10 @@ USER_C_INCLUDES += -Iapps/modules
 USER_C_INCLUDES += -Iapps/modules/os
 USER_C_INCLUDES += -Iapps/modules/drivers
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518
+ifneq ($(call ifdef_any_of,SPI_CAN),)
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/canfdspi
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/spi
+endif
 USER_C_INCLUDES += -Iapps/modules/hardware
 USER_C_INCLUDES += -Iapps/modules/app
 USER_C_INCLUDES += -Iapps/modules/app/charger
@@ -53,21 +55,22 @@ USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/system/arch
 USER_C_SOURCES += apps/os_memory.c
 USER_C_SOURCES += apps/os_random.c
 USER_C_SOURCES += apps/local_time.c
-USER_C_SOURCES += apps/early_sys_callback.c
 USER_C_SOURCES += apps/app.c
 USER_C_SOURCES += apps/uart_debug_handler.c
 USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
 USER_C_SOURCES += apps/can_config.c
-ifneq ($(call ifdef_any_of,SAL_WIZNET),)
-USER_C_SOURCES += apps/wiznet_spi.c
-endif
 USER_C_SOURCES += apps/storage_config.c
 USER_C_SOURCES += apps/channels_addr_handler.c
 USER_C_SOURCES += apps/display_cache.c
 USER_C_SOURCES += apps/channels_notify_voice.c
 USER_C_SOURCES += apps/power_manager_group_policy_handler.c
+ifneq ($(call ifdef_any_of,SAL_WIZNET),)
+USER_C_SOURCES += apps/wiznet_spi.c
+endif
+ifneq ($(call ifdef_any_of,SPI_CAN),)
 USER_C_SOURCES += apps/exti.c
+endif
 
 USER_C_SOURCES += apps/modules/app/config_utils.c
 USER_C_SOURCES += apps/modules/app/poll_loop.c
@@ -193,8 +196,10 @@ endif
 USER_C_SOURCES += apps/modules/drivers/spi_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_ops_hal.c
+ifneq ($(call ifdef_any_of,SPI_CAN),)
 USER_C_SOURCES += apps/modules/drivers/mcp2518/mcp25xxfd_driver/canfdspi/drv_canfdspi_api.c
 USER_C_SOURCES += apps/modules/drivers/can_ops_spi_can.c
+endif
 USER_C_SOURCES += apps/modules/drivers/usart_txrx.c
 USER_C_SOURCES += apps/modules/drivers/i2c_txrx.c
 USER_C_SOURCES += apps/modules/os/event_helper.c

@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年03月03日 星期四 14时08分56秒
+ *   修改日期：2022年03月23日 星期三 11时12分24秒
  *   描    述：
  *
  *================================================================*/
@@ -83,22 +83,19 @@ int app_save_config(void)
 	return save_config_item(app_info->storage_info, "eva", &app_info->mechine_info, sizeof(mechine_info_t), offset);
 }
 
-int app_event_init(size_t size)
+static void app_event_init(size_t size)
 {
-	int ret = -1;
-
 	if(app_event != NULL) {
-		return ret;
+		return;
 	}
 
 	app_event = signal_create(size);
 	OS_ASSERT(app_event != NULL);
-	ret = 0;
-	return ret;
 }
 
 void app_init(void)
 {
+	app_event_init(10);
 	mem_info_init();
 	mt_file_init();
 }
@@ -372,8 +369,6 @@ void app(void const *argument)
 	int ret;
 	storage_info_t *cache_storage_info;
 
-	app_init();
-
 	app_info = (app_info_t *)os_calloc(1, sizeof(app_info_t));
 
 	OS_ASSERT(app_info != NULL);
@@ -411,7 +406,7 @@ void app(void const *argument)
 		snprintf(app_info->mechine_info.sn, sizeof(app_info->mechine_info.sn), "%d.%d.%d.%d", 255, 255, 255, 0);
 		snprintf(app_info->mechine_info.gw, sizeof(app_info->mechine_info.gw), "%d.%d.%d.%d", 10, 42, 0, 1);
 		app_info->mechine_info.dhcp_enable = 0;
-		app_info->mechine_info.request_type = APP_DEFAULT_REQUEST_TYPE;
+		app_info->mechine_info.request_type = REQUEST_TYPE_SSE;
 		app_info->mechine_info.reset_config = 0;
 		app_info->mechine_info.tz = 8;
 		app_save_config();

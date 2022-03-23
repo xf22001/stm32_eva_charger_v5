@@ -6,7 +6,7 @@
  *   文件名称：app.h
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时56分29秒
- *   修改日期：2022年03月18日 星期五 17时32分58秒
+ *   修改日期：2022年03月23日 星期三 10时59分17秒
  *   描    述：
  *
  *================================================================*/
@@ -23,13 +23,11 @@ extern "C"
 #include "callback_chain.h"
 #include "display_cache.h"
 #include "storage.h"
-#include "net_client.h"
 
 #define VER_MAJOR 0
 #define VER_MINOR 0
 #define VER_REV 0
 #define VER_BUILD 0
-#define APP_DEFAULT_REQUEST_TYPE REQUEST_TYPE_SSE
 
 #pragma pack(push, 1)
 
@@ -75,7 +73,6 @@ typedef enum {
 app_info_t *get_app_info(void);
 int app_load_config(void);
 int app_save_config(void);
-int app_event_init(size_t size);
 void app_init(void);
 void send_app_event(app_event_t event, uint32_t timeout);
 void load_app_display_cache(app_info_t *app_info);

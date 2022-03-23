@@ -6,7 +6,7 @@
  *   文件名称：can_config.c
  *   创 建 者：肖飞
  *   创建日期：2020年04月17日 星期五 09时16分53秒
- *   修改日期：2021年12月27日 星期一 14时05分30秒
+ *   修改日期：2022年03月23日 星期三 11时21分51秒
  *   描    述：
  *
  *================================================================*/
@@ -46,6 +46,7 @@ can_config_t can_config_can2 = {
 	.filter_mask_ext = 0,
 };
 
+#if defined(SPI_CAN)
 can_config_t can_config_can3 = {
 	.type = CAN_TYPE_SPI_CAN,
 	.hcan = &hspi3,
@@ -63,11 +64,14 @@ can_config_t can_config_can3 = {
 	.spi_cs_port = GPIOG,
 	.spi_cs_pin = GPIO_PIN_15,
 };
+#endif
 
 static can_config_t *can_config_sz[] = {
 	&can_config_can1,
 	&can_config_can2,
+#if defined(SPI_CAN)
 	&can_config_can3,
+#endif
 };
 
 can_config_t *get_can_config(void *hcan)
