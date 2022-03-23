@@ -22,8 +22,8 @@ USER_C_INCLUDES += -Iapps
 USER_C_INCLUDES += -Iapps/modules
 USER_C_INCLUDES += -Iapps/modules/os
 USER_C_INCLUDES += -Iapps/modules/drivers
-USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518
 ifneq ($(call ifdef_any_of,SPI_CAN),)
+USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/canfdspi
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/spi
 endif

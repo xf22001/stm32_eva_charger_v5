@@ -6,7 +6,7 @@
  *   文件名称：app.h
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时56分29秒
- *   修改日期：2022年03月23日 星期三 10时59分17秒
+ *   修改日期：2022年03月23日 星期三 12时00分33秒
  *   描    述：
  *
  *================================================================*/
@@ -49,6 +49,8 @@ typedef struct {
 	char tz;
 } mechine_info_t;
 
+#pragma pack(pop)
+
 typedef struct {
 	mechine_info_t mechine_info;
 	uint8_t mechine_info_invalid;
@@ -57,8 +59,6 @@ typedef struct {
 	callback_item_t display_data_invalid_callback_item;
 	callback_item_t display_data_changed_callback_item;
 } app_info_t;
-
-#pragma pack(pop)
 
 typedef enum {
 	APP_EVENT_NONE = 0,
