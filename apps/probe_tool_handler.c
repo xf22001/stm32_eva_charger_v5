@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年03月25日 星期五 09时36分54秒
+ *   修改日期：2022年03月25日 星期五 09时50分03秒
  *   描    述：
  *
  *================================================================*/
@@ -733,7 +733,6 @@ static void fn22(request_t *request)
 	if(ret == 3) {
 		channels_info_t *channels_info = get_channels();
 		channel_info_t *channel_info = channels_info->channel_info + channel;
-		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 
 		if(lock != 0) {
 			channel_info->charger_lock_action_request = CHARGER_LOCK_ACTION_REQUEST_LOCK;
@@ -757,7 +756,6 @@ static void fn23(request_t *request)
 	if(ret == 2) {
 		channels_info_t *channels_info = get_channels();
 		channel_info_t *channel_info = channels_info->channel_info + channel;
-		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 
 		debug("channel %d lock state %d", channel, channel_info->charger_lock_state);
 	}
