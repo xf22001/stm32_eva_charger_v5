@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年03月23日 星期三 11时14分50秒
+ *   修改日期：2022年03月25日 星期五 09时39分04秒
  *   描    述：
  *
  *================================================================*/
@@ -731,11 +731,10 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 3600: {//插枪状态
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 			uint16_t value = 0;
 
-			debug("charger %d connect state:%d", channel_info->channel_id, charger_info->charger_connect_state);
-			if(charger_info->charger_connect_state == 1) {
+			debug("charger %d connect state:%d", channel_info->channel_id, channel_info->charger_connect_state);
+			if(channel_info->charger_connect_state == 1) {
 				value = 1;
 			}
 
@@ -746,9 +745,8 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		case 3601: {//电子锁状态
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
 			channel_config_t *channel_config = channel_info->channel_config;
-			charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
 
-			modbus_data_value_r(modbus_data_ctx, charger_info->charger_lock_state);
+			modbus_data_value_r(modbus_data_ctx, channel_info->charger_lock_state);
 		}
 		break;
 

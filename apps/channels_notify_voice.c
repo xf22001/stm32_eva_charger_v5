@@ -6,7 +6,7 @@
  *   文件名称：channels_notify_voice.c
  *   创 建 者：肖飞
  *   创建日期：2021年08月03日 星期二 11时23分04秒
- *   修改日期：2022年01月06日 星期四 17时08分36秒
+ *   修改日期：2022年03月25日 星期五 09时40分14秒
  *   描    述：
  *
  *================================================================*/
@@ -123,7 +123,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 				case CHARGER_STATE_EVENT_CHARGER_CONNECTOR: {
 					switch(channel_info->channel_id) {
 						case 0: {
-							if(charger_info->charger_connect_state == 0) {
+							if(channel_info->charger_connect_state == 0) {
 								request_voice(voice_info, VOICE_DATA_CHARGER1_DISCONNECT);
 							} else {
 								request_voice(voice_info, VOICE_DATA_CHARGER1_CONNECTED);
@@ -132,7 +132,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 						break;
 
 						case 1: {
-							if(charger_info->charger_connect_state == 0) {
+							if(channel_info->charger_connect_state == 0) {
 								request_voice(voice_info, VOICE_DATA_CHARGER2_DISCONNECT);
 							} else {
 								request_voice(voice_info, VOICE_DATA_CHARGER2_CONNECTED);
@@ -141,7 +141,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 						break;
 
 						default: {
-							if(charger_info->charger_connect_state == 0) {
+							if(channel_info->charger_connect_state == 0) {
 								request_voice(voice_info, VOICE_DATA_CHARGER_DISCONNECT);
 							} else {
 								request_voice(voice_info, VOICE_DATA_CHARGER_CONNECTED);
@@ -155,7 +155,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 				case CHARGER_STATE_EVENT_VEHICLE_CONNECTOR: {
 					switch(channel_info->channel_id) {
 						case 0: {
-							if(charger_info->vehicle_relay_state == 0) {
+							if(channel_info->vehicle_relay_state == 0) {
 								if(charger_info->charger_bms_work_state == CHARGER_BMS_WORK_STATE_RUNNING) {
 									request_voice(voice_info, VOICE_DATA_CHARGER1_PAUSE);
 								} else {
@@ -168,7 +168,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 						break;
 
 						case 1: {
-							if(charger_info->vehicle_relay_state == 0) {
+							if(channel_info->vehicle_relay_state == 0) {
 								if(charger_info->charger_bms_work_state == CHARGER_BMS_WORK_STATE_RUNNING) {
 									request_voice(voice_info, VOICE_DATA_CHARGER2_PAUSE);
 								} else {
@@ -181,7 +181,7 @@ static void channels_notify_voice(void *fn_ctx, void *chain_ctx)
 						break;
 
 						default: {
-							if(charger_info->vehicle_relay_state == 0) {
+							if(channel_info->vehicle_relay_state == 0) {
 								if(charger_info->charger_bms_work_state == CHARGER_BMS_WORK_STATE_RUNNING) {
 									request_voice(voice_info, VOICE_DATA_CHARGER_PAUSE);
 								} else {
