@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年03月25日 星期五 10时29分58秒
+#   修改日期：2022年03月25日 星期五 20时12分25秒
 #   描    述：
 #
 #================================================================
@@ -143,6 +143,8 @@ USER_C_SOURCES += apps/modules/app/charger/channels_comm_proxy.c
 endif
 ifneq ($(call ifdef_any_of,MULTI_CHARGE_PROXY),)
 USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy.c
+USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy_master.c
+USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy_slave.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/charger.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
