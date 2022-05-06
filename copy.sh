@@ -6,7 +6,7 @@
 #   文件名称：copy.sh
 #   创 建 者：肖飞
 #   创建日期：2021年08月02日 星期一 15时31分26秒
-#   修改日期：2022年01月17日 星期一 09时14分51秒
+#   修改日期：2022年05月06日 星期五 08时40分22秒
 #   描    述：
 #
 #================================================================
@@ -18,6 +18,7 @@ function main() {
 	echo rsync -aR "$(pwd)/./Makefile" ./src
 	echo rsync -aR "$(pwd)/./config.mk" ./src
 	echo rsync -aR "$(pwd)/./override.mk" ./src
+	echo rsync -aR "$(pwd)/./target.mk" ./src
 	echo rsync -aR "$(pwd)/./user.mk" ./src
 	echo rsync -aR "$(pwd)/./sal/sal.mk" ./src
 }
