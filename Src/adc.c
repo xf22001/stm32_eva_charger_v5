@@ -226,15 +226,15 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     PC3     ------> ADC1_IN13
     PA2     ------> ADC1_IN2
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_3;
+    GPIO_InitStruct.Pin = CP_VOLTAGE_PAR_MODE_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(CP_VOLTAGE_PAR_MODE_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Pin = CP1_VOLTAGE_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(CP1_VOLTAGE_GPIO_Port, &GPIO_InitStruct);
 
     /* ADC1 DMA Init */
     /* ADC1 Init */
@@ -282,13 +282,13 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     PC1     ------> ADC3_IN11
     PC2     ------> ADC3_IN12
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
-                          |GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10;
+    GPIO_InitStruct.Pin = TEMP__PLUG1_Pin|TEMP__PLUG1F4_Pin|BAT1_V_Pin|TEMP__PLUG2_Pin
+                          |TEMP__PLUG2F7_Pin|CHARGER1_V_Pin|INS_R_V_PLUG1_Pin|INS_R_V_PLUG2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
+    GPIO_InitStruct.Pin = CHARGER2_V_Pin|BAT2_V_Pin|AMB_TEMP_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -333,9 +333,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
     PC3     ------> ADC1_IN13
     PA2     ------> ADC1_IN2
     */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_3);
+    HAL_GPIO_DeInit(CP_VOLTAGE_PAR_MODE_GPIO_Port, CP_VOLTAGE_PAR_MODE_Pin);
 
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
+    HAL_GPIO_DeInit(CP1_VOLTAGE_GPIO_Port, CP1_VOLTAGE_Pin);
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
@@ -364,10 +364,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
     PC1     ------> ADC3_IN11
     PC2     ------> ADC3_IN12
     */
-    HAL_GPIO_DeInit(GPIOF, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6
-                          |GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10);
+    HAL_GPIO_DeInit(GPIOF, TEMP__PLUG1_Pin|TEMP__PLUG1F4_Pin|BAT1_V_Pin|TEMP__PLUG2_Pin
+                          |TEMP__PLUG2F7_Pin|CHARGER1_V_Pin|INS_R_V_PLUG1_Pin|INS_R_V_PLUG2_Pin);
 
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2);
+    HAL_GPIO_DeInit(GPIOC, CHARGER2_V_Pin|BAT2_V_Pin|AMB_TEMP_Pin);
 
     /* ADC3 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);

@@ -125,7 +125,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
     PH7     ------> I2C3_SCL
     PH8     ------> I2C3_SDA
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8;
+    GPIO_InitStruct.Pin = EEP_SCL_Pin|EEP_SDA_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -175,9 +175,9 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
     PH7     ------> I2C3_SCL
     PH8     ------> I2C3_SDA
     */
-    HAL_GPIO_DeInit(GPIOH, GPIO_PIN_7);
+    HAL_GPIO_DeInit(EEP_SCL_GPIO_Port, EEP_SCL_Pin);
 
-    HAL_GPIO_DeInit(GPIOH, GPIO_PIN_8);
+    HAL_GPIO_DeInit(EEP_SDA_GPIO_Port, EEP_SDA_Pin);
 
   /* USER CODE BEGIN I2C3_MspDeInit 1 */
 
