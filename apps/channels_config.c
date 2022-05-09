@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年03月10日 星期四 10时06分48秒
+ *   修改日期：2022年05月09日 星期一 12时10分04秒
  *   描    述：
  *
  *================================================================*/
@@ -14,13 +14,15 @@
 #include "os_utils.h"
 #include "power_modules.h"
 
-extern CAN_HandleTypeDef hcan1;
-extern CAN_HandleTypeDef hcan2;
-extern SPI_HandleTypeDef hspi3;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart4;
-extern UART_HandleTypeDef huart6;
+extern CAN_HandleTypeDef hcan1;//comm
+extern CAN_HandleTypeDef hcan2;//charger1
+extern SPI_HandleTypeDef hspi3;//charger2
+extern UART_HandleTypeDef huart1;//CARD READER
+extern UART_HandleTypeDef huart2;//4G
+extern UART_HandleTypeDef huart3;//METER2
+extern UART_HandleTypeDef huart4;//METER1
+extern UART_HandleTypeDef huart5;//EXTEND
+extern UART_HandleTypeDef huart6;//DISPLAY
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc3;
 
