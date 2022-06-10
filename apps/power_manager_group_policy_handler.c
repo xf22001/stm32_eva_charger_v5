@@ -6,7 +6,7 @@
  *   文件名称：power_manager_group_policy_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年11月30日 星期二 15时07分16秒
- *   修改日期：2022年03月07日 星期一 15时37分40秒
+ *   修改日期：2022年06月10日 星期五 09时03分45秒
  *   描    述：
  *
  *================================================================*/
@@ -367,9 +367,10 @@ static void clean_up_relay_map(power_manager_group_info_t *power_manager_group_i
 	//channels_info_t *channels_info = power_manager_info->channels_info;
 	power_manager_group_policy_ctx_t *power_manager_group_policy_ctx = (power_manager_group_policy_ctx_t *)power_manager_info->power_manager_group_policy_ctx + power_manager_group_info->id;
 	int i;
+	bitmap_t *relay_map = power_manager_group_policy_ctx->relay_map;
 
-	for(i = 0; i < power_manager_group_info->channel_number; i++) {
-		set_bitmap_value(power_manager_group_policy_ctx->relay_map, i, 0);
+	for(i = 0; i < relay_map->size; i++) {
+		set_bitmap_value(relay_map, i, 0);
 	}
 }
 
