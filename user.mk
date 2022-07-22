@@ -64,7 +64,7 @@ USER_C_SOURCES += apps/storage_config.c
 USER_C_SOURCES += apps/channels_addr_handler.c
 USER_C_SOURCES += apps/display_cache.c
 USER_C_SOURCES += apps/channels_notify_voice.c
-USER_C_SOURCES += apps/power_manager_group_policy_handler.c
+USER_C_SOURCES += apps/power_manager_group_policy_config.c
 ifneq ($(call ifdef_any_of,SAL_WIZNET),)
 USER_C_SOURCES += apps/wiznet_spi.c
 endif
@@ -163,6 +163,7 @@ USER_C_SOURCES += apps/modules/app/charger/charger_bms_nobms.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/power_manager.c
 USER_C_SOURCES += apps/modules/app/charger/power_manager_handler_native.c
+USER_C_SOURCES += apps/modules/app/charger/power_manager_group_policy_chain.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac.c
@@ -239,7 +240,7 @@ USER_CFLAGS += -DCJSON_API_VISIBILITY -DCJSON_EXPORT_SYMBOLS -DENABLE_LOCALES -D
 
 CFLAGS += $(USER_CFLAGS) $(CONFIG_CFLAGS)
 
-#LDFLAGS += -u _printf_float -Wl,--wrap=srand  -Wl,--wrap=rand
+#LDFLAGS += -u _printf_float -Wl,--wrap=srand -Wl,--wrap=rand
 LDFLAGS += -u _printf_float
 
 default: all
