@@ -6,7 +6,7 @@
 #   文件名称：config.mk
 #   创 建 者：肖飞
 #   创建日期：2021年08月26日 星期四 11时10分19秒
-#   修改日期：2022年08月01日 星期一 09时13分58秒
+#   修改日期：2022年08月01日 星期一 09时19分56秒
 #   描    述：
 #
 #================================================================
@@ -43,8 +43,6 @@ CONFIG_LIST += CHARGER_BMS_HANDLER_GB
 #CONFIG_LIST += CHARGER_BMS_HANDLER_CCS
 #CONFIG_LIST += CHARGER_BMS_HANDLER_AC
 #CONFIG_LIST += CHARGER_BMS_HANDLER_NOBMS
-
-CONFIG_LIST += ADC_VALUE_HELPER
 
 CONFIG_LIST += SAL_WIZNET
 #CONFIG_LIST += SAL_AT
