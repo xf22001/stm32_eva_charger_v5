@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年08月01日 星期一 09时13分07秒
+ *   修改日期：2022年08月01日 星期一 09时51分56秒
  *   描    述：
  *
  *================================================================*/
@@ -484,11 +484,25 @@ proxy_channel_item_t *get_proxy_channel_item_by_channel_id(proxy_channel_info_t 
 	return item;
 }
 
-int adc_value_helper(int adc_value_type, uint16_t adc_value)
+int adc_value_helper(adc_value_type_t adc_value_type, uint16_t adc_value)
 {
 	int value = 0;
 
 	switch(adc_value_type) {
+		case ADC_VALUE_TYPE_CP_AD_VOLTAGE: {
+			value = adc_value * 3300 / 4096;//0v-1.2v 采样 0v-12v
+
+			//(V - 0.5) * 2 / 102 * 8 * 4 / 3 = u
+			//V - 0.5 = u / (2 / 102 * 8 * 4 / 3)
+			//修正前
+			//V = u / (2 / 102 * 8 * 4 / 3) + 0.5
+			//修正后
+			//V = u / (1.8667 / 101.8667 * 8 * 4 / 3) + 0.5
+
+			value = value * 5.1159817458616805 / 10 + 50;
+		}
+		break;
+
 		default: {
 			app_panic();
 		}
