@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年03月25日 星期五 20时12分25秒
+#   修改日期：2022年07月29日 星期五 12时57分26秒
 #   描    述：
 #
 #================================================================
@@ -155,6 +155,8 @@ USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
 ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB),)
 USER_C_SOURCES += apps/modules/app/bms_multi_data.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_jp.c
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_plc_ccs.c
 USER_C_SOURCES += apps/modules/app/charger/function_board.c
 USER_C_SOURCES += apps/modules/app/charger/function_board_handler_485.c
 USER_C_SOURCES += apps/modules/app/charger/function_board_handler_v5.c

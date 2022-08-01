@@ -6,13 +6,14 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2022年05月29日 星期日 06时23分29秒
+ *   修改日期：2022年08月01日 星期一 09时05分49秒
  *   描    述：
  *
  *================================================================*/
 #include "channels_config.h"
 #include "os_utils.h"
 #include "power_modules.h"
+#include "adc_value_type.h"
 
 extern CAN_HandleTypeDef hcan1;//comm
 extern CAN_HandleTypeDef hcan2;//charger1
@@ -482,4 +483,18 @@ proxy_channel_item_t *get_proxy_channel_item_by_channel_id(proxy_channel_info_t 
 	}
 
 	return item;
+}
+
+int adc_value_helper(int adc_value_type, uint16_t adc_value)
+{
+	int value = 0;
+
+	switch(adc_value_type) {
+		default: {
+			app_panic();
+		}
+		break;
+	}
+
+	return value;
 }
