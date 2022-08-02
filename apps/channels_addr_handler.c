@@ -6,7 +6,7 @@
  *   文件名称：channels_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月16日 星期五 14时03分28秒
- *   修改日期：2022年03月25日 星期五 09时39分04秒
+ *   修改日期：2022年08月02日 星期二 08时52分43秒
  *   描    述：
  *
  *================================================================*/
@@ -788,13 +788,13 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case 3608: {//枪头正极温度
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, channel_info->dc_p_temperature);
+			modbus_data_value_r(modbus_data_ctx, channel_info->temperature_p);
 		}
 		break;
 
 		case 3609: {//枪头负极温度
 			channel_info_t *channel_info = (channel_info_t *)channels_info->channel_info + channels_info->display_cache_channels.current_channel;
-			modbus_data_value_r(modbus_data_ctx, channel_info->dc_n_temperature);
+			modbus_data_value_r(modbus_data_ctx, channel_info->temperature_n);
 		}
 		break;
 
