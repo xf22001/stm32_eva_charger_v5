@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年02月21日 星期一 09时49分50秒
+ *   修改日期：2022年08月05日 星期五 15时55分33秒
  *   描    述：
  *
  *================================================================*/
@@ -347,6 +347,12 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 		channels_info->channels_settings_invalid = 1;
 	}
 
+	if(channels_info->display_cache_channels.withholding_sync != 0) {
+		channels_info->display_cache_channels.withholding_sync = 0;
+		channels_settings->withholding = get_u32_from_u16_01(channels_info->display_cache_channels.withholding_l, channels_info->display_cache_channels.withholding_h);
+		channels_info->channels_settings_invalid = 1;
+	}
+
 	if(channels_info->display_cache_channels.record_sync == 1) {
 		channel_record_task_info_t *channel_record_task_info = get_or_alloc_channel_record_task_info(0);
 
@@ -356,6 +362,8 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 			struct tm tm = {0};
 			uint8_t year_h = get_u8_l_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
 			uint8_t year_l = get_u8_h_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
+
+			channels_info->display_cache_channels.record_load_cmd = 0;	
 
 			tm.tm_year = get_u16_from_bcd_b01(year_l, year_h) - 1900;
 			tm.tm_mon = get_u8_from_bcd(channels_info->display_cache_channels.record_dt_cache.mon) - 1;
