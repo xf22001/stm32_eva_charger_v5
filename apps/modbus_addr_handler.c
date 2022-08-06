@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时34分58秒
- *   修改日期：2022年08月05日 星期五 17时16分30秒
+ *   修改日期：2022年08月06日 星期六 10时00分21秒
  *   描    述：
  *
  *================================================================*/
@@ -39,7 +39,7 @@
 #define add_modbus_data_get_set_power_module_info_field_case(power_module_id, field_name) \
 	add_modbus_data_get_set_item_case(POWER_MODULE_##power_module_id##_STATUS_##field_name)
 
-#define add_modbus_data_get_set_module_info_case(power_module_id) \
+#define add_modbus_data_get_set_power_module_info_case(power_module_id) \
 	add_modbus_data_get_set_power_module_info_field_case(power_module_id, PDU_GROUP_ID): \
 	case add_modbus_data_get_set_power_module_info_field_case(power_module_id, CHANNEL_ID): \
 	case add_modbus_data_get_set_power_module_info_field_case(power_module_id, RELAY_BOARD_ID): \
@@ -55,6 +55,7 @@ typedef struct {
 	uint8_t id;
 	uint8_t field;
 	uint16_t buffer_start;
+	uint16_t offset;
 } enum_info_t;
 
 #define add_power_module_field_type_case(field) \
@@ -128,20 +129,20 @@ static void get_power_module_enum_info(modbus_slave_addr_t addr, enum_info_t *en
 	}
 }
 
-static uint16_t get_power_module_info_by_id_field(channels_info_t *channels_info, uint8_t module_id, uint8_t field)
+static void modbus_data_action_power_module_info(channels_info_t *channels_info, modbus_data_ctx_t *modbus_data_ctx, enum_info_t *enum_info)
 {
 	power_manager_info_t *power_manager_info = (power_manager_info_t *)channels_info->power_manager_info;
-	power_module_item_info_t *power_module_item_info = power_manager_info->power_module_item_info + module_id;
+	power_module_item_info_t *power_module_item_info = power_manager_info->power_module_item_info + enum_info->id;
 
-	if(module_id >= channels_info->power_module_number) {
-		return 0xffff;
+	if(enum_info->id >= channels_info->power_module_number) {
+		modbus_data_value_r(modbus_data_ctx, 0xffff);
 	}
 
-	switch(field) {
+	switch(enum_info->field) {
 		case add_power_module_field_type_case(PDU_GROUP_ID): {
 			power_module_group_info_t *power_module_group_info = (power_module_group_info_t *)power_module_item_info->power_module_group_info;
 			power_manager_group_info_t *power_manager_group_info = (power_manager_group_info_t *)power_module_group_info->power_manager_group_info;
-			return power_manager_group_info->id;
+			modbus_data_value_r(modbus_data_ctx, power_manager_group_info->id);
 		}
 		break;
 
@@ -150,55 +151,55 @@ static uint16_t get_power_module_info_by_id_field(channels_info_t *channels_info
 			power_manager_channel_info_t *power_manager_channel_info = (power_manager_channel_info_t *)power_module_group_info->power_manager_channel_info;
 
 			if(power_manager_channel_info != NULL) {
-				return power_manager_channel_info->id;
+				modbus_data_value_r(modbus_data_ctx, power_manager_channel_info->id);
 			} else {
-				return 0xffff;
+				modbus_data_value_r(modbus_data_ctx, 0xffff);
 			}
 		}
 		break;
 
 		case add_power_module_field_type_case(RELAY_BOARD_ID): {
-			return 0xffff;
+			modbus_data_value_r(modbus_data_ctx, 0xffff);
 		}
 		break;
 
 		case add_power_module_field_type_case(WORK_STATE): {
-			return power_module_item_info->status.state;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.state);
 		}
 		break;
 
 		case add_power_module_field_type_case(REQUIRE_VOLTAGE): {
-			return power_module_item_info->status.setting_output_voltage;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.setting_output_voltage);
 		}
 		break;
 
 		case add_power_module_field_type_case(REQUIRE_CURRENT): {
-			return power_module_item_info->status.require_output_current;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.require_output_current);
 		}
 		break;
 
 		case add_power_module_field_type_case(OUTPUT_VOLTAGE): {
-			return power_module_item_info->status.module_output_voltage;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.module_output_voltage);
 		}
 		break;
 
 		case add_power_module_field_type_case(OUTPUT_CURRENT): {
-			return power_module_item_info->status.module_output_current;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.module_output_current);
 		}
 		break;
 
 		case add_power_module_field_type_case(MODULE_STATE): {
-			return power_module_item_info->status.module_status;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.module_status);
 		}
 		break;
 
 		case add_power_module_field_type_case(CONNECT_STATE): {
-			return power_module_item_info->status.connect_state;
+			modbus_data_value_r(modbus_data_ctx, power_module_item_info->status.connect_state);
 		}
 		break;
 
 		default: {
-			return 0xffff;
+			modbus_data_value_r(modbus_data_ctx, 0xffff);
 		}
 		break;
 	}
@@ -233,24 +234,16 @@ static uint16_t get_power_module_info_by_id_field(channels_info_t *channels_info
 #define add_channel_status_field_type_case(field_name) \
 	CHANNEL_STATUS_FIELD_TYPE_##field_name
 
-#define add_channel_status_word_field_type_l_case(field_name) \
-	CHANNEL_STATUS_FIELD_TYPE_##field_name##_L
-
-#define add_channel_status_word_field_type_h_case(field_name) \
-	CHANNEL_STATUS_FIELD_TYPE_##field_name##_H
-
 typedef enum {
 	add_channel_status_field_type_case(STATE),
 	add_channel_status_field_type_case(VOLTAGE),
 	add_channel_status_field_type_case(CURRENT),
-	add_channel_status_word_field_type_l_case(CHARGE_ENERGY),
-	add_channel_status_word_field_type_h_case(CHARGE_ENERGY),
+	add_channel_status_field_type_case(CHARGE_ENERGY),
 	add_channel_status_field_type_case(CHARGE_DURATION),
 	add_channel_status_field_type_case(REQUIRE_VOLTAGE),
 	add_channel_status_field_type_case(REQUIRE_CURRENT),
 	add_channel_status_field_type_case(CHANNEL_FAULT),
-	add_channel_status_word_field_type_l_case(ACCOUNT_BALANCE),
-	add_channel_status_word_field_type_h_case(ACCOUNT_BALANCE),
+	add_channel_status_field_type_case(ACCOUNT_BALANCE),
 	add_channel_status_field_type_case(START_STOP),
 	add_channel_status_field_type_case(REMAIN_MIN),
 	add_channel_status_field_type_case(SOC),
@@ -267,14 +260,16 @@ typedef enum {
 #define add_get_channel_status_word_enum_info_field_l_case(channel_id, enum_info, field_name) \
 	case add_modbus_data_get_set_channel_status_word_field_l_case(channel_id, field_name): { \
 		enum_info->id = channel_id; \
-		enum_info->field = add_channel_status_word_field_type_l_case(field_name); \
+		enum_info->field = add_channel_status_field_type_case(field_name); \
+		enum_info->offset = 0; \
 	} \
 	break
 
 #define add_get_channel_status_word_enum_info_field_h_case(channel_id, enum_info, field_name) \
 	case add_modbus_data_get_set_channel_status_word_field_h_case(channel_id, field_name): { \
 		enum_info->id = channel_id; \
-		enum_info->field = add_channel_status_word_field_type_l_case(field_name); \
+		enum_info->field = add_channel_status_field_type_case(field_name); \
+		enum_info->offset = 1; \
 	} \
 	break
 
@@ -310,101 +305,95 @@ static void get_channel_status_enum_info(modbus_slave_addr_t addr, enum_info_t *
 	}
 }
 
-static uint16_t get_channel_status_by_id_field(channels_info_t *channels_info, uint8_t channel_id, uint8_t field)
+static void modbus_data_action_channel_status(channels_info_t *channels_info, modbus_data_ctx_t *modbus_data_ctx, enum_info_t *enum_info)
 {
-	channel_info_t *channel_info = channels_info->channel_info + channel_id;
+	channel_info_t *channel_info = channels_info->channel_info + enum_info->id;
 
-	if(channel_id >= channels_info->channel_number) {
-		return 0xffff;
+	if(enum_info->id >= channels_info->channel_number) {
+		modbus_data_value_r(modbus_data_ctx, 0xffff);
 	}
 
-	switch(field) {
+	switch(enum_info->field) {
 		case add_channel_status_field_type_case(STATE): {
-			return channel_info->state;
+			modbus_data_value_r(modbus_data_ctx, channel_info->state);
 		}
 		break;
 
 		case add_channel_status_field_type_case(VOLTAGE): {
-			return channel_info->voltage;
+			modbus_data_value_r(modbus_data_ctx, channel_info->voltage);
 		}
 		break;
 
 		case add_channel_status_field_type_case(CURRENT): {
-			return channel_info->current;
+			modbus_data_value_r(modbus_data_ctx, channel_info->current);
 		}
 		break;
 
-		case add_channel_status_word_field_type_l_case(CHARGE_ENERGY): {
+		case add_channel_status_field_type_case(CHARGE_ENERGY): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return get_u16_0_from_u32(channel_info->channel_record_item.energy);
+				if(enum_info->offset == 0) {
+					modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.energy));
+				} else if(enum_info->offset == 1) {
+					modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.energy));
+				} else {
+					modbus_data_value_r(modbus_data_ctx, 0);
+				}
 			} else {
-				return 0;
-			}
-		}
-		break;
-
-		case add_channel_status_word_field_type_h_case(CHARGE_ENERGY): {
-			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return get_u16_1_from_u32(channel_info->channel_record_item.energy);
-			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
 
 		case add_channel_status_field_type_case(CHARGE_DURATION): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return (get_time() - channel_info->channel_record_item.start_time) / 60;
+				modbus_data_value_r(modbus_data_ctx, (get_time() - channel_info->channel_record_item.start_time) / 60);
 			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
 
 		case add_channel_status_field_type_case(REQUIRE_VOLTAGE): {
-			return channel_info->require_voltage;
+			modbus_data_value_r(modbus_data_ctx, channel_info->require_voltage);
 		}
 		break;
 
 		case add_channel_status_field_type_case(REQUIRE_CURRENT): {
-			return channel_info->require_current;
+			modbus_data_value_r(modbus_data_ctx, channel_info->require_current);
 		}
 		break;
 
 		case add_channel_status_field_type_case(CHANNEL_FAULT): {
-			return get_first_fault(channel_info->faults);
+			modbus_data_value_r(modbus_data_ctx, get_first_fault(channel_info->faults));
 		}
 		break;
 
-		case add_channel_status_word_field_type_l_case(ACCOUNT_BALANCE): {
+		case add_channel_status_field_type_case(ACCOUNT_BALANCE): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return get_u16_0_from_u32(channel_info->channel_record_item.account_balance);
+				if(enum_info->offset == 0) {
+					modbus_data_value_r(modbus_data_ctx, get_u16_0_from_u32(channel_info->channel_record_item.account_balance));
+				} else if(enum_info->offset == 1) {
+					modbus_data_value_r(modbus_data_ctx, get_u16_1_from_u32(channel_info->channel_record_item.account_balance));
+				} else {
+					modbus_data_value_r(modbus_data_ctx, 0);
+				}
 			} else {
-				return 0;
-			}
-		}
-		break;
-
-		case add_channel_status_word_field_type_h_case(ACCOUNT_BALANCE): {
-			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return get_u16_1_from_u32(channel_info->channel_record_item.account_balance);
-			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
 
 		case add_channel_status_field_type_case(START_STOP): {//开关机
-			return (channel_info->state == CHANNEL_STATE_CHARGING) ? 1 : 0;
+			modbus_data_value_r(modbus_data_ctx, (channel_info->state == CHANNEL_STATE_CHARGING) ? 1 : 0);
 		}
 		break;
 
 		case add_channel_status_field_type_case(REMAIN_MIN): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
 				charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
-				return charger_info->bms_data.bcs_data.remain_min;
+				modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.remain_min);
 			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
@@ -412,24 +401,24 @@ static uint16_t get_channel_status_by_id_field(channels_info_t *channels_info, u
 		case add_channel_status_field_type_case(SOC): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
 				charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
-				return charger_info->bms_data.bcs_data.soc;
+				modbus_data_value_r(modbus_data_ctx, charger_info->bms_data.bcs_data.soc);
 			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
 
 		case add_channel_status_field_type_case(AMOUNT): {
 			if(channel_info->state == CHANNEL_STATE_CHARGING) {
-				return channel_info->channel_record_item.amount;
+				modbus_data_value_r(modbus_data_ctx, channel_info->channel_record_item.amount);
 			} else {
-				return 0;
+				modbus_data_value_r(modbus_data_ctx, 0);
 			}
 		}
 		break;
 
 		default: {
-			return 0xffff;
+			modbus_data_value_r(modbus_data_ctx, 0xffff);
 		}
 		break;
 	}
@@ -763,30 +752,30 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		//桩状态
-		case add_modbus_data_get_set_module_info_case(0):
-		case add_modbus_data_get_set_module_info_case(1):
-		case add_modbus_data_get_set_module_info_case(2):
-		case add_modbus_data_get_set_module_info_case(3):
-		case add_modbus_data_get_set_module_info_case(4):
-		case add_modbus_data_get_set_module_info_case(5):
-		case add_modbus_data_get_set_module_info_case(6):
-		case add_modbus_data_get_set_module_info_case(7):
-		case add_modbus_data_get_set_module_info_case(8):
-		case add_modbus_data_get_set_module_info_case(9):
-		case add_modbus_data_get_set_module_info_case(10):
-		case add_modbus_data_get_set_module_info_case(11):
-		case add_modbus_data_get_set_module_info_case(12):
-		case add_modbus_data_get_set_module_info_case(13):
-		case add_modbus_data_get_set_module_info_case(14):
-		case add_modbus_data_get_set_module_info_case(15):
-		case add_modbus_data_get_set_module_info_case(16):
-		case add_modbus_data_get_set_module_info_case(17):
-		case add_modbus_data_get_set_module_info_case(18):
-		case add_modbus_data_get_set_module_info_case(19):
-		case add_modbus_data_get_set_module_info_case(20):
-		case add_modbus_data_get_set_module_info_case(21):
-		case add_modbus_data_get_set_module_info_case(22):
-		case add_modbus_data_get_set_module_info_case(23): {
+		case add_modbus_data_get_set_power_module_info_case(0):
+		case add_modbus_data_get_set_power_module_info_case(1):
+		case add_modbus_data_get_set_power_module_info_case(2):
+		case add_modbus_data_get_set_power_module_info_case(3):
+		case add_modbus_data_get_set_power_module_info_case(4):
+		case add_modbus_data_get_set_power_module_info_case(5):
+		case add_modbus_data_get_set_power_module_info_case(6):
+		case add_modbus_data_get_set_power_module_info_case(7):
+		case add_modbus_data_get_set_power_module_info_case(8):
+		case add_modbus_data_get_set_power_module_info_case(9):
+		case add_modbus_data_get_set_power_module_info_case(10):
+		case add_modbus_data_get_set_power_module_info_case(11):
+		case add_modbus_data_get_set_power_module_info_case(12):
+		case add_modbus_data_get_set_power_module_info_case(13):
+		case add_modbus_data_get_set_power_module_info_case(14):
+		case add_modbus_data_get_set_power_module_info_case(15):
+		case add_modbus_data_get_set_power_module_info_case(16):
+		case add_modbus_data_get_set_power_module_info_case(17):
+		case add_modbus_data_get_set_power_module_info_case(18):
+		case add_modbus_data_get_set_power_module_info_case(19):
+		case add_modbus_data_get_set_power_module_info_case(20):
+		case add_modbus_data_get_set_power_module_info_case(21):
+		case add_modbus_data_get_set_power_module_info_case(22):
+		case add_modbus_data_get_set_power_module_info_case(23): {
 			enum_info_t enum_info;
 			get_power_module_enum_info(modbus_data_ctx->addr, &enum_info);
 			//debug("%s module %d field %d",
@@ -796,7 +785,7 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 			//      enum_info.id,
 			//      enum_info.field);
 
-			modbus_data_value_r(modbus_data_ctx, get_power_module_info_by_id_field(channels_info, enum_info.id, enum_info.field));
+			modbus_data_action_power_module_info(channels_info, modbus_data_ctx, &enum_info);
 		}
 		break;
 
@@ -812,7 +801,7 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 			//      enum_info.id,
 			//      enum_info.field);
 
-			modbus_data_value_r(modbus_data_ctx, get_channel_status_by_id_field(channels_info, enum_info.id, enum_info.field));
+			modbus_data_action_channel_status(channels_info, modbus_data_ctx, &enum_info);
 		}
 		break;
 
