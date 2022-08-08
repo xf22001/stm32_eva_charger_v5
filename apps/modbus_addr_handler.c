@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时34分58秒
- *   修改日期：2022年08月06日 星期六 10时00分21秒
+ *   修改日期：2022年08月08日 星期一 10时34分44秒
  *   描    述：
  *
  *================================================================*/
@@ -385,6 +385,48 @@ static void modbus_data_action_channel_status(channels_info_t *channels_info, mo
 
 		case add_channel_status_field_type_case(START_STOP): {//开关机
 			modbus_data_value_r(modbus_data_ctx, (channel_info->state == CHANNEL_STATE_CHARGING) ? 1 : 0);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				channel_event_t *channel_event = os_calloc(1, sizeof(channel_event_t));
+				channels_event_t *channels_event = os_calloc(1, sizeof(channels_event_t));
+				uint8_t channel_id = channel_info->channel_id;
+				uint8_t type = CHANNEL_EVENT_TYPE_START_CHANNEL;
+
+				OS_ASSERT(channel_event != NULL);
+				OS_ASSERT(channels_event != NULL);
+
+				switch(type) {
+					case CHANNEL_EVENT_TYPE_START_CHANNEL: {
+						channel_info->channel_event_start_display.charge_mode = CHANNEL_RECORD_CHARGE_MODE_UNLIMIT;
+						channel_info->channel_event_start_display.start_reason = CHANNEL_RECORD_ITEM_START_REASON_MANUAL;
+					}
+					break;
+
+					case CHANNEL_EVENT_TYPE_STOP_CHANNEL: {
+						channel_info->channel_event_stop.stop_reason = CHANNEL_RECORD_ITEM_STOP_REASON_MANUAL;
+					}
+					break;
+
+					default: {
+					}
+					break;
+				}
+
+				channel_event->channel_id = channel_id;
+				channel_event->type = type;
+				channel_event->ctx = &channel_info->channel_event_start_display;
+
+				channels_event->type = CHANNELS_EVENT_CHANNEL;
+				channels_event->event = channel_event;
+
+				if(send_channels_event(channels_info, channels_event, 100) != 0) {
+					os_free(channels_event->event);
+					os_free(channels_event);
+					debug("send channel %d type %d failed!", channel_id, type);
+				} else {
+					debug("send channel %d type %d successful!", channel_id, type);
+				}
+			}
 		}
 		break;
 
@@ -630,7 +672,12 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 		break;
 
 		case add_modbus_data_get_set_item_case(RESET_CONFIG): {
-			modbus_data_value_rw(modbus_data_ctx, app_info->mechine_info.reset_config);
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_set_reset_config();
+				app_save_config();
+				debug("reset config ...");
+				HAL_NVIC_SystemReset();
+			}
 		}
 		break;
 

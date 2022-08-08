@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.h
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时36分06秒
- *   修改日期：2022年08月05日 星期五 11时14分49秒
+ *   修改日期：2022年08月08日 星期一 10时37分57秒
  *   描    述：
  *
  *================================================================*/
@@ -96,7 +96,7 @@ extern "C"
 
 typedef enum {
 	//设备信息
-	add_enum_modbus_buffer(DEVICE_ID, 16),
+	add_enum_modbus_buffer_with_base(DEVICE_ID, 16, 0),
 	add_enum_modbus_buffer(URI, 64),
 	add_enum_modbus_buffer(IP, 20),
 	add_enum_modbus_buffer(SN, 20),
