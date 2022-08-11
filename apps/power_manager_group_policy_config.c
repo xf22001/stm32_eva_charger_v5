@@ -6,7 +6,7 @@
  *   文件名称：power_manager_group_policy_config.c
  *   创 建 者：肖飞
  *   创建日期：2022年07月22日 星期五 12时30分44秒
- *   修改日期：2022年07月22日 星期五 13时32分54秒
+ *   修改日期：2022年08月11日 星期四 09时18分00秒
  *   描    述：
  *
  *================================================================*/
@@ -45,16 +45,22 @@ relay_info_t relay_info = {
 	.power_manager_group_relay_info = power_manager_relay_info_sz,
 };
 
+static uint8_t power_module_group_id_0_0[] = {0};
+
 static power_module_group_bind_node_t power_module_group_bind_node_0_0 = {
 	.id = 0,
 	.channel_id = 0,
-	.power_module_group_id = {0},
+	.power_module_group_id_sz = power_module_group_id_0_0,
+	.power_module_group_id_size = ARRAY_SIZE(power_module_group_id_0_0),
 };
+
+static uint8_t power_module_group_id_0_1[] = {1};
 
 static power_module_group_bind_node_t power_module_group_bind_node_0_1 = {
 	.id = 1,
 	.channel_id = 1,
-	.power_module_group_id = {1},
+	.power_module_group_id_sz = power_module_group_id_0_1,
+	.power_module_group_id_size = ARRAY_SIZE(power_module_group_id_0_1),
 };
 
 static power_module_group_bind_node_t *power_module_group_bind_node_sz[] = {
