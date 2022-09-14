@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年08月04日 星期四 10时36分18秒
+#   修改日期：2022年09月14日 星期三 09时06分02秒
 #   描    述：
 #
 #================================================================
@@ -62,9 +62,13 @@ USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
 USER_C_SOURCES += apps/can_config.c
 USER_C_SOURCES += apps/storage_config.c
+ifeq ($(call ifdef_any_of,DISABLE_DISPLAY),)
 USER_C_SOURCES += apps/modbus_addr_handler.c
 USER_C_SOURCES += apps/display_cache.c
+endif
+ifeq ($(call ifdef_any_of,DISABLE_VOICE),)
 USER_C_SOURCES += apps/channels_notify_voice.c
+endif
 USER_C_SOURCES += apps/power_manager_group_policy_config.c
 ifneq ($(call ifdef_any_of,SAL_WIZNET),)
 USER_C_SOURCES += apps/wiznet_spi.c
@@ -78,7 +82,9 @@ USER_C_SOURCES += apps/modules/app/poll_loop.c
 USER_C_SOURCES += apps/modules/app/request.c
 USER_C_SOURCES += apps/modules/app/probe_tool.c
 USER_C_SOURCES += apps/modules/app/uart_debug.c
+ifeq ($(call ifdef_any_of,DISABLE_USB_OTG),)
 USER_C_SOURCES += apps/modules/app/file_log.c
+endif
 USER_C_SOURCES += apps/modules/app/net_client/net_client.c
 ifneq ($(call ifdef_any_of,NET_CLIENT_PROTOCOL_UDP),)
 USER_C_SOURCES += apps/modules/app/net_client/net_protocol_udp.c
@@ -108,16 +114,25 @@ USER_C_SOURCES += apps/modules/app/mt_file.c
 USER_C_SOURCES += apps/modules/app/can_data_task.c
 USER_C_SOURCES += apps/modules/app/uart_data_task.c
 #USER_C_SOURCES += apps/modules/app/duty_cycle_pattern.c
+ifeq ($(call ifdef_any_of,DISABLE_USB_OTG),)
 USER_C_SOURCES += apps/modules/app/usbh_user_callback.c
+endif
 USER_C_SOURCES += apps/modules/app/early_sys_callback.c
 USER_C_SOURCES += apps/modules/app/connect_state.c
 USER_C_SOURCES += apps/modules/app/ntc_temperature.c
 USER_C_SOURCES += apps/modules/app/pt_temperature.c
 USER_C_SOURCES += apps/modules/app/can_command.c
+ifeq ($(call ifdef_any_of,DISABLE_USB_OTG),)
 USER_C_SOURCES += apps/modules/app/usb_upgrade.c
+endif
 USER_C_SOURCES += apps/modules/app/firmware_upgrade_internal_flash.c
+ifeq ($(call ifdef_any_of,DISABLE_DISPLAY),)
 USER_C_SOURCES += apps/modules/app/display.c
+endif
+ifeq ($(call ifdef_any_of,DISABLE_VOICE),)
 USER_C_SOURCES += apps/modules/app/voice.c
+endif
+ifeq ($(call ifdef_any_of,DISABLE_POWER_MANAGER),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules.c
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_none.c
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_pseudo.c
@@ -131,6 +146,8 @@ USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_zte.c
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager.c
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager_handler_native.c
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager_group_policy_chain.c
+endif
+USER_C_SOURCES += apps/modules/app/charger/channels_config_helper.c
 USER_C_SOURCES += apps/modules/app/charger/channels.c
 USER_C_SOURCES += apps/modules/app/charger/channel.c
 ifneq ($(call ifdef_any_of,CHARGER_CHANNEL_NATIVE),)
@@ -147,19 +164,30 @@ USER_C_SOURCES += apps/modules/app/charger/channels_comm_proxy.c
 endif
 ifneq ($(call ifdef_any_of,MULTI_CHARGE_PROXY),)
 USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy.c
-USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy_master.c
-USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy_slave.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/charger.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
-ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB),)
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB CHARGER_BMS_HANDLER_PLC_CCS CHARGER_BMS_HANDLER_GB_MULTI_CHARGE),)
 USER_C_SOURCES += apps/modules/app/bms_multi_data.c
-USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
-USER_C_SOURCES += apps/modules/app/charger/charger_bms_jp.c
-USER_C_SOURCES += apps/modules/app/charger/charger_bms_plc_ccs.c
+endif
 USER_C_SOURCES += apps/modules/app/charger/function_board.c
+ifneq ($(call ifdef_any_of,FUNCTION_BOARD_HANDLER_485),)
 USER_C_SOURCES += apps/modules/app/charger/function_board_handler_485.c
+endif
+ifneq ($(call ifdef_any_of,FUNCTION_BOARD_HANDLER_V5),)
 USER_C_SOURCES += apps/modules/app/charger/function_board_handler_v5.c
+endif
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB),)
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
+endif
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_PLC_CCS),)
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_plc_ccs.c
+endif
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_JP),)
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_jp.c
+endif
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB_MULTI_CHARGE),)
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb_multi_charge.c
 endif
 ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_AC),)
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_ac.c
@@ -174,11 +202,13 @@ USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_hlw8032.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_sdm_220.c
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_sdm_630.c
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
+ifeq ($(call ifdef_any_of,DISABLE_CARDREADER),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_pseudo.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_626.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_628.c
+endif
 ifneq ($(call ifdef_any_of,CHARGER_CHANNEL_PROXY_REMOTE),)
 USER_C_SOURCES += apps/modules/app/charger/channels_comm_proxy_remote.c
 endif

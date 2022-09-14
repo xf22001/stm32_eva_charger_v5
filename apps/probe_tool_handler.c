@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2022年03月25日 星期五 09时50分03秒
+ *   修改日期：2022年08月30日 星期二 14时26分37秒
  *   描    述：
  *
  *================================================================*/
@@ -23,11 +23,12 @@
 #include "app.h"
 #include "ftp_client.h"
 #include "channels.h"
+#include "channel.h"
 #include "card_reader.h"
+#if !defined(DISABLE_POWER_MANAGER)
 #include "power_manager.h"
-
-#include "charger.h"
-#include "function_board.h"
+#endif
+#include "config_layout.h"
 
 #include "sal_hook.h"
 
@@ -175,7 +176,7 @@ static int p_host(struct hostent *ent)
 static void get_host_by_name(char *content, uint32_t size)
 {
 	struct hostent *ent;
-	char *hostname = (char *)os_alloc(RECV_BUFFER_SIZE);
+	char *hostname = (char *)os_calloc(1, RECV_BUFFER_SIZE);
 	int ret;
 	int fn;
 	int catched;
@@ -211,6 +212,7 @@ static void fn4(request_t *request)
 }
 
 uint16_t osGetCPUUsage(void);
+int get_brk_size(void);
 static void fn5(request_t *request)
 {
 	int size = xPortGetFreeHeapSize();
@@ -226,6 +228,7 @@ static void fn5(request_t *request)
 
 	_printf("cpu usage:%d\n", cpu_usage);
 	_printf("free os heap size:%d\n", size);
+	_printf("brk size:%d\n", get_brk_size());
 	_printf("total heap size:%d, free heap size:%d, used:%d, heap count:%d, max heap size:%d\n",
 	        total_heap_size,
 	        total_heap_size - heap_size,
@@ -246,7 +249,7 @@ static void fn5(request_t *request)
 
 	size = 1024;
 
-	os_thread_info = (uint8_t *)os_alloc(size);
+	os_thread_info = (uint8_t *)os_calloc(1, size);
 
 	if(os_thread_info == NULL) {
 		return;
@@ -254,7 +257,15 @@ static void fn5(request_t *request)
 
 	osThreadList(os_thread_info);
 
+	_printf("%-15s\t%s\t%s\t%s\t%s\n", "name", "state", "prio", "stack", "no");
 	_puts((const char *)os_thread_info);
+
+	vTaskGetRunTimeStats((char *)os_thread_info);
+
+	_printf("\n\n%-15s\t%s\t\t%s\n", "name", "count", "percent");
+	_puts((const char *)os_thread_info);
+
+	_printf("\n");
 
 	os_free(os_thread_info);
 
@@ -387,7 +398,7 @@ static void fn11(request_t *request)
 	int catched;
 	int ret;
 	net_client_info_t *net_client_info = get_net_client_info();
-	mechine_info_t *buffer = (mechine_info_t *)os_alloc(sizeof(mechine_info_t));
+	mechine_info_t *buffer = (mechine_info_t *)os_calloc(1, sizeof(mechine_info_t));
 
 	if(buffer == NULL) {
 		return;
@@ -424,7 +435,7 @@ static void fn12(request_t *request)
 	int fn;
 	int catched;
 	int ret;
-	ftp_server_path_t *ftp_server_path = (ftp_server_path_t *)os_alloc(sizeof(ftp_server_path_t));
+	ftp_server_path_t *ftp_server_path = (ftp_server_path_t *)os_calloc(1, sizeof(ftp_server_path_t));
 
 	if(ftp_server_path == NULL) {
 		return;
@@ -514,13 +525,13 @@ static void fn14(request_t *request)
 
 		switch(type) {
 			case CHANNEL_EVENT_TYPE_START_CHANNEL: {
-				channel_info->channel_event_start_display.charge_mode = CHANNEL_RECORD_CHARGE_MODE_UNLIMIT;
-				channel_info->channel_event_start_display.start_reason = CHANNEL_RECORD_ITEM_START_REASON_BMS;
+				channel_info->channel_event_start_bms.charge_mode = CHANNEL_RECORD_CHARGE_MODE_UNLIMIT;
+				channel_info->channel_event_start_bms.start_reason = channel_record_item_start_reason(BMS);
 			}
 			break;
 
 			case CHANNEL_EVENT_TYPE_STOP_CHANNEL: {
-				channel_info->channel_event_stop.stop_reason = CHANNEL_RECORD_ITEM_STOP_REASON_MANUAL;
+				channel_info->channel_event_stop.stop_reason = channel_record_item_stop_reason(MANUAL);
 			}
 			break;
 
@@ -531,7 +542,7 @@ static void fn14(request_t *request)
 
 		channel_event->channel_id = channel_id;
 		channel_event->type = type;
-		channel_event->ctx = &channel_info->channel_event_start_display;
+		channel_event->ctx = &channel_info->channel_event_start_bms;
 
 		channels_event->type = CHANNELS_EVENT_CHANNEL;
 		channels_event->event = channel_event;
@@ -565,6 +576,7 @@ static void fn15(request_t *request)
 	}
 }
 
+#if !defined(DISABLE_CARDREADER)
 static void account_request_cb(void *fn_ctx, void *chain_ctx)
 {
 	account_response_info_t *account_response_info = (account_response_info_t *)chain_ctx;
@@ -628,6 +640,7 @@ static void fn16(request_t *request)
 		start_card_reader_cb(card_reader_info, &card_reader_cb);
 	}
 }
+#endif
 
 static void fn17(request_t *request)
 {
@@ -648,202 +661,89 @@ static void fn17(request_t *request)
 
 static void fn18(request_t *request)
 {
+#if !defined(DISABLE_POWER_MANAGER)
 	start_dump_channels_stats();
+#endif
 }
 
-#include "pt_temperature.h"
+//19 0 453930000013
 static void fn19(request_t *request)
 {
 	char *content = (char *)(request + 1);
 	int fn;
-	int adc = 0;
+	int channel_id;
+	unsigned int addr5;
+	unsigned int addr4;
+	unsigned int addr3;
+	unsigned int addr2;
+	unsigned int addr1;
+	unsigned int addr0;
 	int catched;
 	int ret;
 
-	ret = sscanf(content, "%d %d %n", &fn, &adc, &catched);
+	ret = sscanf(content, "%d %d %2x%2x%2x%2x%2x%02x%n",
+	             &fn,
+	             &channel_id,
+	             &addr5,
+	             &addr4,
+	             &addr3,
+	             &addr2,
+	             &addr1,
+	             &addr0,
+	             &catched);
 
-	if(ret == 2) {
-		float temperature = get_pt_temperature(1000, adc, 4095);
-		debug("adc:%d, temperature:%f", adc, temperature);
+	if(ret == 8) {
+		channels_info_t *channels_info = get_channels();
+		channel_info_t *channel_info = channels_info->channel_info + channel_id;
+		channel_settings_t *channel_settings = &channel_info->channel_settings;
+		config_layout_t *config_layout = get_config_layout();
+		size_t offset = (size_t)&config_layout->channels_settings_seg.settings.storage_channel_settings[channel_info->channel_id].channel_settings;
+
+		channel_settings->energy_meter_settings.dlt_645_addr.data[5] = addr5;
+		channel_settings->energy_meter_settings.dlt_645_addr.data[4] = addr4;
+		channel_settings->energy_meter_settings.dlt_645_addr.data[3] = addr3;
+		channel_settings->energy_meter_settings.dlt_645_addr.data[2] = addr2;
+		channel_settings->energy_meter_settings.dlt_645_addr.data[1] = addr1;
+		channel_settings->energy_meter_settings.dlt_645_addr.data[0] = addr0;
+		debug("offset:%d", offset);
+		save_config_item(channels_info->storage_info, "channel_info->channel_settings", &channel_info->channel_settings, sizeof(channel_settings_t), offset);
+		HAL_NVIC_SystemReset();
+	} else {
+		debug("ret:%d", ret);
 	}
 }
 
-extern ADC_HandleTypeDef hadc3;
-#include "hw_adc.h"
+//20 0 2000 10 0
 static void fn20(request_t *request)
 {
 	char *content = (char *)(request + 1);
 	int fn;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %n", &fn, &catched);
-
-	if(ret == 1) {
-		int i;
-
-		for(i = 0; i < 11; i++) {
-			adc_info_t *adc_info;
-			uint16_t ad;
-			adc_info = get_or_alloc_adc_info(&hadc3);
-			OS_ASSERT(adc_info != NULL);
-			ad = get_adc_value(adc_info, i);
-			debug("adc3 rank %d ad:%d", i, ad);
-		}
-	}
-}
-
-static void fn21(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int channel;
+	int channel_id;
 	int voltage;
 	int current;
+	int require_mode;
 	int catched;
 	int ret;
 
-	ret = sscanf(content, "%d %d %d %d %n", &fn, &channel, &voltage, &current, &catched);
+	ret = sscanf(content, "%d %d %d %d %d %n",
+	             &fn,
+	             &channel_id,
+	             &voltage,
+	             &current,
+	             &require_mode,
+	             &catched);
+	debug("ret:%d", ret);
 
-	if(ret == 4) {
+	if(ret == 5) {
 		channels_info_t *channels_info = get_channels();
-		channel_info_t *channel_info = channels_info->channel_info + channel;
+		channel_info_t *channel_info = channels_info->channel_info + channel_id;
 
-		if(channel >= channels_info->channel_number) {
-			debug("invalid channel %d", channel);
-			return;
-		}
+		channel_require_update(channel_info, voltage, current, require_mode);
 
-		channel_info->require_voltage = voltage;
-		channel_info->require_current = current;
+		debug("set channel %d voltage:%d, current:%d, require_mode:%d!", channel_id, voltage, current, require_mode);
 	}
 }
 
-static void fn22(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int channel;
-	int lock;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %d %n", &fn, &channel, &lock, &catched);
-
-	if(ret == 3) {
-		channels_info_t *channels_info = get_channels();
-		channel_info_t *channel_info = channels_info->channel_info + channel;
-
-		if(lock != 0) {
-			channel_info->charger_lock_action_request = CHARGER_LOCK_ACTION_REQUEST_LOCK;
-		} else {
-			channel_info->charger_lock_action_request = CHARGER_LOCK_ACTION_REQUEST_UNLOCK;
-		}
-
-	}
-}
-
-static void fn23(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int channel;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %n", &fn, &channel, &catched);
-
-	if(ret == 2) {
-		channels_info_t *channels_info = get_channels();
-		channel_info_t *channel_info = channels_info->channel_info + channel;
-
-		debug("channel %d lock state %d", channel, channel_info->charger_lock_state);
-	}
-}
-
-static void fn24(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int channel;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %n", &fn, &channel, &catched);
-
-	if(ret == 2) {
-		channels_info_t *channels_info = get_channels();
-		channel_info_t *channel_info = channels_info->channel_info + channel;
-		charger_info_t *charger_info = (charger_info_t *)channel_info->charger_info;
-		function_board_insulation_detect(charger_info);
-	}
-}
-
-static void fn25(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int channel;
-	int state;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %d %n", &fn, &channel, &state, &catched);
-
-	if(ret == 3) {
-		channels_info_t *channels_info = get_channels();
-		channel_info_t *channel_info = channels_info->channel_info + channel;
-		channel_config_t *channel_config = channel_info->channel_config;
-
-		if(channel_config->charger_config.output_relay_gpio != NULL) {
-			if(state == 0) {
-				HAL_GPIO_WritePin(channel_config->charger_config.output_relay_gpio, channel_config->charger_config.output_relay_pin, GPIO_PIN_RESET);
-			} else {
-				HAL_GPIO_WritePin(channel_config->charger_config.output_relay_gpio, channel_config->charger_config.output_relay_pin, GPIO_PIN_SET);
-			}
-		}
-	}
-}
-
-static void fn26(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int state;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %n", &fn, &state, &catched);
-
-	if(ret == 2) {
-		if(state == 0) {
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-		} else {
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-		}
-	}
-}
-
-static void fn27(request_t *request)
-{
-	char *content = (char *)(request + 1);
-	int fn;
-	int state;
-	int catched;
-	int ret;
-
-	ret = sscanf(content, "%d %d %n", &fn, &state, &catched);
-
-	if(ret == 2) {
-		if(state == 0) {
-			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1, GPIO_PIN_RESET);
-			debug("");
-		} else {
-			HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1, GPIO_PIN_SET);
-			debug("");
-		}
-	}
-}
 
 static server_item_t server_map[] = {
 	{1, fn1},
@@ -861,21 +761,16 @@ static server_item_t server_map[] = {
 	{13, fn13},
 	{14, fn14},
 	{15, fn15},
+#if !defined(DISABLE_CARDREADER)
 	{16, fn16},
+#endif
 	{17, fn17},
 	{18, fn18},
 	{19, fn19},
 	{20, fn20},
-	{21, fn21},
-	{22, fn22},
-	{23, fn23},
-	{24, fn24},
-	{25, fn25},
-	{26, fn26},
-	{27, fn27},
 };
 
 server_map_info_t server_map_info = {
 	.server_map = server_map,
-	.server_map_size = sizeof(server_map) / sizeof(server_item_t),
+	.server_map_size = ARRAY_SIZE(server_map),
 };
