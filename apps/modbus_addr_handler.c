@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时34分58秒
- *   修改日期：2022年09月05日 星期一 11时06分47秒
+ *   修改日期：2022年10月21日 星期五 15时48分43秒
  *   描    述：
  *
  *================================================================*/
@@ -523,7 +523,7 @@ static void modbus_data_action_channel_status(channels_info_t *channels_info, mo
 
 		case add_channel_status_field_type_case(PRICE): {
 			time_t ts = get_time();
-			uint32_t price = get_current_price(channel_info, ts);
+			uint32_t price = get_current_energy_price(channel_info, ts);
 			modbus_data_value_r(modbus_data_ctx, price);
 		}
 		break;

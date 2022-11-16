@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年09月01日 星期四 14时23分55秒
+ *   修改日期：2022年11月09日 星期三 14时45分04秒
  *   描    述：
  *
  *================================================================*/
@@ -363,7 +363,7 @@ void sync_channels_display_cache(channels_info_t *channels_info)
 			uint8_t year_l = get_u8_l_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
 			uint8_t year_h = get_u8_h_from_u16(channels_info->display_cache_channels.record_dt_cache.year);
 
-			channels_info->display_cache_channels.record_load_cmd = 0;	
+			channels_info->display_cache_channels.record_load_cmd = 0;
 
 			tm.tm_year = get_u16_from_bcd_b01(year_l, year_h) - 1900;
 			tm.tm_mon = get_u8_from_bcd(channels_info->display_cache_channels.record_dt_cache.mon) - 1;
@@ -407,6 +407,29 @@ void load_channel_display_cache(channel_info_t *channel_info)
 {
 }
 
+static void display_start_channel(channel_info_t *channel_info)
+{
+	channels_info_t *channels_info = channel_info->channels_info;
+	channel_event_t *channel_event;
+	channels_event_t *channels_event;
+	channel_event = os_calloc(1, sizeof(channel_event_t));
+	channels_event = os_calloc(1, sizeof(channels_event_t));
+
+	OS_ASSERT(channel_event != NULL);
+	OS_ASSERT(channels_event != NULL);
+
+	channel_event->channel_id = channel_info->channel_id;
+	channel_event->type = CHANNEL_EVENT_TYPE_START_CHANNEL;
+	channel_event->ctx = &channel_info->channel_event_start_display;
+
+	channels_event->type = CHANNELS_EVENT_CHANNEL;
+	channels_event->event = channel_event;
+
+	if(send_channels_event(channels_info, channels_event, 100) != 0) {
+	}
+}
+
+
 void sync_channel_display_cache(channel_info_t *channel_info)
 {
 	if(channel_info->display_cache_channel.dlt_645_addr_sync != 0) {
@@ -420,66 +443,39 @@ void sync_channel_display_cache(channel_info_t *channel_info)
 	}
 
 	if(channel_info->display_cache_channel.charger_start_sync == 1) {
-		channel_event_type_t type = CHANNEL_EVENT_TYPE_UNKNOW;
-		channel_event_t *channel_event;
-		channels_event_t *channels_event;
 		channels_info_t *channels_info = (channels_info_t *)channel_info->channels_info;
+		channels_settings_t *channels_settings = &channels_info->channels_settings;
 
 		channel_info->display_cache_channel.charger_start_sync = 0;
 
 		if(channel_info->display_cache_channel.onoff == 1) {//开机
+			time_t start_ts;
+
 			if(channel_info->state != CHANNEL_STATE_IDLE) {
 				debug("");
 				return;
 			}
 
+			start_ts = get_time();
+
 			channel_info->channel_event_start_display.charge_mode = channel_info->display_cache_channel.charge_mode;
-			channel_info->channel_event_start_display.start_reason = channel_info->display_cache_channel.start_reason;
-			type = CHANNEL_EVENT_TYPE_START_CHANNEL;
 
 			switch(channel_info->display_cache_channel.charge_mode) {
-				case CHANNEL_RECORD_CHARGE_MODE_UNLIMIT: {
-				}
-				break;
-
 				case CHANNEL_RECORD_CHARGE_MODE_DURATION: {
-					struct tm tm;
-					time_t start_ts;
-					time_t stop_ts;
-
-					start_ts = get_time();
-					stop_ts = get_time();
-
-					tm = *localtime(&start_ts);
-					channel_info->channel_event_start_display.start_time = mktime(&tm);
-					tm.tm_hour = get_u8_from_bcd(channel_info->display_cache_channel.start_hour);
-					tm.tm_min = get_u8_from_bcd(channel_info->display_cache_channel.start_min);
-					tm.tm_sec = 0;
-					start_ts = mktime(&tm);
-
+					channel_info->channel_event_start_display.charge_condition = get_u32_from_u16_01(channel_info->display_cache_channel.charge_condition_l, channel_info->display_cache_channel.charge_condition_h) * 60;
 					channel_info->channel_event_start_display.start_time = start_ts;
-
-					tm = *localtime(&stop_ts);
-					tm.tm_hour = get_u8_from_bcd(channel_info->display_cache_channel.stop_hour);
-					tm.tm_min = get_u8_from_bcd(channel_info->display_cache_channel.stop_min);
-					tm.tm_sec = 0;
-					stop_ts = mktime(&tm);
-
-					if(start_ts > stop_ts) {
-						stop_ts += 86400;
-					}
-
-					channel_info->channel_event_start_display.charge_duration = stop_ts - start_ts;
 				}
 				break;
 
 				case CHANNEL_RECORD_CHARGE_MODE_AMOUNT: {
-					channel_info->channel_event_start_display.charge_amount = channel_info->display_cache_channel.charge_amount;
+					channel_info->channel_event_start_display.charge_condition = get_u32_from_u16_01(channel_info->display_cache_channel.charge_condition_l, channel_info->display_cache_channel.charge_condition_h) * get_value_accuracy_base(VALUE_ACCURACY_2, VALUE_ACCURACY_2);
+					channel_info->channel_event_start_display.start_time = start_ts;
 				}
 				break;
 
 				case CHANNEL_RECORD_CHARGE_MODE_ENERGY: {
-					channel_info->channel_event_start_display.charge_energy = channel_info->display_cache_channel.charge_energy;
+					channel_info->channel_event_start_display.charge_condition = get_u32_from_u16_01(channel_info->display_cache_channel.charge_condition_l, channel_info->display_cache_channel.charge_condition_h) * get_value_accuracy_base(VALUE_ACCURACY_0, VALUE_ACCURACY_4);
+					channel_info->channel_event_start_display.start_time = start_ts;
 				}
 				break;
 
@@ -488,25 +484,25 @@ void sync_channel_display_cache(channel_info_t *channel_info)
 				}
 				break;
 			}
+
+			if(channels_settings->authorize != 0) {
+				if(channel_info->display_cache_channel.account_type == ACCOUNT_TYPE_CARD) {
+					channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(CARD);
+					//todo ...
+					//start_card_reader_cb(card_reader_info, &card_reader_cb);
+				} else if(channel_info->display_cache_channel.account_type == ACCOUNT_TYPE_VIN) {
+					channel_info->channel_event_start_display.vin_verify_enable = 1;
+					channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(VIN);
+					display_start_channel(channel_info);
+				} else {
+				}
+			} else {
+				channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(MANUAL);
+				display_start_channel(channel_info);
+			}
+
 		} else {//关机
-			channel_info->channel_event_stop.stop_reason = channel_record_item_stop_reason(MANUAL);
-			type = CHANNEL_EVENT_TYPE_STOP_CHANNEL;
-		}
-
-		channel_event = os_calloc(1, sizeof(channel_event_t));
-		channels_event = os_calloc(1, sizeof(channels_event_t));
-
-		OS_ASSERT(channel_event != NULL);
-		OS_ASSERT(channels_event != NULL);
-
-		channel_event->channel_id = channel_info->channel_id;
-		channel_event->type = type;
-		channel_event->ctx = &channel_info->channel_event_start_display;
-
-		channels_event->type = CHANNELS_EVENT_CHANNEL;
-		channels_event->event = channel_event;
-
-		if(send_channels_event(channels_info, channels_event, 100) != 0) {
+			channel_request_stop(channel_info, channel_record_item_stop_reason(MANUAL));
 		}
 	}
 }

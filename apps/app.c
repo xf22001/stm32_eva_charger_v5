@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年07月08日 星期五 08时38分57秒
+ *   修改日期：2022年11月16日 星期三 16时04分25秒
  *   描    述：
  *
  *================================================================*/
@@ -105,6 +105,7 @@ void send_app_event(app_event_t event, uint32_t timeout)
 	signal_send(app_event, event, timeout);
 }
 
+#if !defined(DISABLE_DISPLAY)
 static void app_mechine_info_invalid(void *fn_ctx, void *chain_ctx)
 {
 	app_info_t *app_info = (app_info_t *)fn_ctx;
@@ -142,6 +143,7 @@ static void app_mechine_info_changed(void *fn_ctx, void *chain_ctx)
 		app_save_config();
 	}
 }
+#endif
 
 void update_network_ip_config(app_info_t *app_info)
 {
@@ -361,11 +363,59 @@ static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
 	}
 }
 
+#if defined(STORAGE_OPS_USBDISK)
+static void wait_usbdisk(void)
+{
+	while(1) {
+		uint8_t exit = 0;
+		uint32_t event;
+		int ret = signal_wait(app_event, &event, 1000);
+
+		if(ret == 0) {
+			switch(event) {
+				case APP_EVENT_HOST_USER_CLASS_ACTIVE: {
+					if(mt_f_mount(get_vfs_fs(), "", 0) == FR_OK) {
+						start_usb_upgrade();
+						exit = 1;
+					}
+				}
+				break;
+
+				case APP_EVENT_HOST_USER_CONNECTION: {
+				}
+				break;
+
+				case APP_EVENT_HOST_USER_DISCONNECTION: {
+					try_to_close_log();
+
+					if(mt_f_mount(0, "", 0) != FR_OK) {
+					}
+				}
+				break;
+
+				default: {
+					debug("unhandled event %x", event);
+				}
+				break;
+			}
+		}
+
+		if(exit != 0) {
+			break;
+		}
+
+		debug("wait usb disk ...");
+	}
+}
+#endif
+
 void app(void const *argument)
 {
 	poll_loop_t *poll_loop;
 	channels_info_t *channels_info = NULL;
+#if !defined(DISABLE_DISPLAY)
 	display_info_t *display_info = NULL;
+#endif
 	int ret;
 	storage_info_t *cache_storage_info;
 
@@ -376,6 +426,9 @@ void app(void const *argument)
 	cache_storage_info = get_or_alloc_storage_info(&hi2c3);
 	OS_ASSERT(cache_storage_info != NULL);
 
+#if defined(STORAGE_OPS_USBDISK)
+	wait_usbdisk();
+#endif
 	app_info->storage_info = get_or_alloc_storage_info(&hspi2);
 	OS_ASSERT(app_info->storage_info != NULL);
 
@@ -450,6 +503,7 @@ void app(void const *argument)
 	//ftp_client_add_poll_loop(poll_loop);
 	ntp_client_add_poll_loop(poll_loop);
 
+#if !defined(DISABLE_DISPLAY)
 	display_info = (display_info_t *)channels_info->display_info;
 	OS_ASSERT(display_info != NULL);
 
@@ -463,9 +517,15 @@ void app(void const *argument)
 		OS_ASSERT(register_callback(display_info->modbus_slave_info->data_changed_chain, &app_info->display_data_changed_callback_item) == 0);
 	}
 
+#endif
+
+#if !defined(DISABLE_VOICE)
+
 	if(init_channels_notify_voice(channels_info) != 0) {
 		debug("");
 	}
+
+#endif
 
 	while(1) {
 		uint32_t event;

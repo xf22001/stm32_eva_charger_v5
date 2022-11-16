@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.h
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时36分06秒
- *   修改日期：2022年09月02日 星期五 12时58分52秒
+ *   修改日期：2022年11月09日 星期三 10时45分40秒
  *   描    述：
  *
  *================================================================*/
@@ -202,6 +202,11 @@ typedef enum {
 	add_enum_modbus_channel_record_status(9, 41000),
 	
 } modbus_slave_addr_t;
+
+typedef enum {
+	MODBUS_TIPS_TYPE_NONE = 0,
+	MODBUS_TIPS_TYPE_AUTH,
+} modbus_tips_type_t;
 
 char *get_modbus_slave_addr_des(modbus_slave_addr_t addr);
 void channels_modbus_data_action(void *fn_ctx, void *chain_ctx);
