@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年09月14日 星期三 09时06分02秒
+#   修改日期：2022年11月17日 星期四 11时45分19秒
 #   描    述：
 #
 #================================================================
@@ -208,6 +208,10 @@ USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_pseudo.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_626.c
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_628.c
+endif
+ifneq ($(call ifdef_any_of,FAN_CONTROL),)
+USER_C_SOURCES += apps/modules/app/charger/fan_control.c
+USER_C_SOURCES += apps/modules/app/charger/fan_control_handler_stc12.c
 endif
 ifneq ($(call ifdef_any_of,CHARGER_CHANNEL_PROXY_REMOTE),)
 USER_C_SOURCES += apps/modules/app/charger/channels_comm_proxy_remote.c
