@@ -6,7 +6,7 @@
  *   文件名称：display_cache.c
  *   创 建 者：肖飞
  *   创建日期：2021年07月17日 星期六 09时42分40秒
- *   修改日期：2022年11月09日 星期三 14时45分04秒
+ *   修改日期：2022年12月13日 星期二 17时34分59秒
  *   描    述：
  *
  *================================================================*/
@@ -16,6 +16,10 @@
 #include "channel.h"
 #include "net_client.h"
 #include "power_manager.h"
+#if !defined(DISABLE_CARDREADER)
+#include "card_reader.h"
+#endif
+#include "modbus_addr_handler.h"
 
 #include "log.h"
 
@@ -284,6 +288,35 @@ int price_item_seg_cb(uint8_t i, uint8_t start_seg, uint8_t stop_seg, channels_s
 	return ret;
 }
 
+static callback_item_t channels_notify_callback_item;
+
+static void start_popup(channels_info_t *channels_info, uint8_t popup_type, uint8_t popup_value)
+{
+	channels_info->display_cache_channels.popup_type = popup_type;
+	channels_info->display_cache_channels.popup_value = popup_value;
+}
+
+static void channels_notify_callback(void *fn_ctx, void *chain_ctx)
+{
+	channels_info_t *channels_info = (channels_info_t *)fn_ctx;
+	channels_notify_ctx_t *channels_notify_ctx = (channels_notify_ctx_t *)chain_ctx;
+	account_response_info_t *account_response_info = (account_response_info_t *)channels_notify_ctx->ctx;
+
+	switch(channels_notify_ctx->notify) {
+		case CHANNELS_NOTIFY_CARD_VERIFY_RESULT:
+		case CHANNELS_NOTIFY_VIN_VERIFY_RESULT: {
+			if(account_response_info->code != ACCOUNT_STATE_CODE_OK) {
+				start_popup(channels_info, MODBUS_POPUP_TYPE_AUTH, account_response_info->code);
+			}
+		}
+		break;
+
+		default: {
+		}
+		break;
+	}
+}
+
 void load_channels_display_cache(channels_info_t *channels_info)
 {
 	channels_settings_t *channels_settings = &channels_info->channels_settings;
@@ -291,6 +324,10 @@ void load_channels_display_cache(channels_info_t *channels_info)
 	parse_price_info(&channels_settings->price_info_energy, mark_price_segs, &seg[0]);
 	parse_price_info(&channels_settings->price_info_service, mark_price_segs, &seg[0]);
 	parse_price_info_by_segs(channels_settings, &seg[0], price_item_seg_cb, &channels_info->display_cache_channels.price_item_cache[0]);
+
+	channels_notify_callback_item.fn = channels_notify_callback;
+	channels_notify_callback_item.fn_ctx = channels_info;
+	OS_ASSERT(register_callback(channels_info->channels_notify_chain, &channels_notify_callback_item) == 0);
 }
 
 static void price_seg_to_price_info(channels_settings_t *channels_settings, price_item_cache_t *price_item_cache, uint8_t max_price_seg)
@@ -429,6 +466,71 @@ static void display_start_channel(channel_info_t *channel_info)
 	}
 }
 
+#if !defined(DISABLE_CARDREADER)
+static void account_request_cb(void *fn_ctx, void *chain_ctx)
+{
+	channels_info_t *channels_info = (channels_info_t *)fn_ctx;
+	account_response_info_t *account_response_info = (account_response_info_t *)chain_ctx;
+	channels_notify_ctx_t channels_notify_ctx;
+
+	channels_notify_ctx.notify = CHANNELS_NOTIFY_CARD_VERIFY_RESULT;
+	channels_notify_ctx.ctx = account_response_info;
+	do_callback_chain(channels_info->channels_notify_chain, &channels_notify_ctx);
+
+	switch(account_response_info->code) {
+		case ACCOUNT_STATE_CODE_OK: {
+			channel_info_t *channel_info = (channel_info_t *)account_response_info->channel_info;
+			debug("balance:%d", account_response_info->balance);
+			channel_info->channel_event_start_display.account_balance = account_response_info->balance;
+			memcpy(channel_info->channel_event_start_display.serial_no, account_response_info->serial_no, sizeof(channel_info->channel_event_start_display.serial_no));
+			display_start_channel(channel_info);
+		}
+		break;
+
+		default: {
+			debug("code:%d", account_response_info->code);
+		}
+		break;
+	}
+}
+
+static void card_reader_cb_fn(void *fn_ctx, void *chain_ctx)
+{
+	channel_info_t *channel_info = (channel_info_t *)fn_ctx;
+	card_reader_data_t *card_reader_data = (card_reader_data_t *)chain_ctx;
+	channels_info_t *channels_info = channel_info->channels_info;
+
+	if(card_reader_data != NULL) {
+		net_client_info_t *net_client_info = get_net_client_info();
+		account_request_info_t account_request_info = {0};
+
+		if(net_client_info != NULL) {
+			char account[32];
+			account_request_info.account_type = ACCOUNT_TYPE_CARD;
+			account_request_info.account = get_ascii_from_u64(account, sizeof(account), card_reader_data->id);
+			account_request_info.password = "123456";
+			account_request_info.channel_info = channel_info;
+			account_request_info.fn = account_request_cb;
+			net_client_net_client_ctrl_cmd(net_client_info, NET_CLIENT_CTRL_CMD_QUERY_ACCOUNT, &account_request_info);
+			debug("");
+		} else {
+			account_response_info_t account_response_info = {0};
+			//无后台刷卡
+			debug("");
+			account_response_info.channel_info = channel_info;
+			account_response_info.code = ACCOUNT_STATE_CODE_OFFLINE;
+			account_response_info.balance = 0;
+			account_request_cb(channels_info, &account_response_info);
+		}
+	} else {
+		account_response_info_t account_response_info = {0};
+		account_response_info.channel_info = channel_info;
+		account_response_info.code = ACCOUNT_STATE_CODE_UNKNOW;
+		account_response_info.balance = 0;
+		account_request_cb(channels_info, &account_response_info);
+	}
+}
+#endif
 
 void sync_channel_display_cache(channel_info_t *channel_info)
 {
@@ -487,17 +589,23 @@ void sync_channel_display_cache(channel_info_t *channel_info)
 
 			if(channels_settings->authorize != 0) {
 				if(channel_info->display_cache_channel.account_type == ACCOUNT_TYPE_CARD) {
+#if !defined(DISABLE_CARDREADER)
+					card_reader_cb_t card_reader_cb;
+					card_reader_info_t *card_reader_info = (card_reader_info_t *)channels_info->card_reader_info;
 					channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(CARD);
-					//todo ...
-					//start_card_reader_cb(card_reader_info, &card_reader_cb);
+					card_reader_cb.fn = card_reader_cb_fn;
+					card_reader_cb.fn_ctx = channel_info;
+					card_reader_cb.timeout = 5000;
+					start_card_reader_cb(card_reader_info, &card_reader_cb);
+#endif
 				} else if(channel_info->display_cache_channel.account_type == ACCOUNT_TYPE_VIN) {
-					channel_info->channel_event_start_display.vin_verify_enable = 1;
 					channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(VIN);
 					display_start_channel(channel_info);
 				} else {
 				}
 			} else {
 				channel_info->channel_event_start_display.start_reason = channel_record_item_start_reason(MANUAL);
+				channel_info->channel_event_start_display.account_balance = 5;
 				display_start_channel(channel_info);
 			}
 
