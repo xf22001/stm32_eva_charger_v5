@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2022年11月17日 星期四 11时45分19秒
+#   修改日期：2023年02月21日 星期二 11时23分58秒
 #   描    述：
 #
 #================================================================
@@ -34,7 +34,7 @@ USER_C_INCLUDES += -Iapps/modules/app/power_modules
 USER_C_INCLUDES += -Iapps/modules/app/power_manager
 USER_C_INCLUDES += -Iapps/modules/app/vfs_disk
 USER_C_INCLUDES += -Iapps/modules/app/net_client
-USER_C_INCLUDES += -Iapps/modules/tests
+#USER_C_INCLUDES += -Iapps/modules/tests
 USER_C_INCLUDES += -IcJSON
 
 USER_C_INCLUDES += -IMiddlewares/Third_Party/LwIP/src/include
@@ -109,8 +109,14 @@ USER_C_SOURCES += apps/modules/app/net_client/request_ocpp_1_6.c
 endif
 USER_C_SOURCES += apps/modules/app/ftp_client.c
 USER_C_SOURCES += apps/modules/app/ntp_client.c
+ifeq ($(call ifdef_any_of,DISABLE_USB_OTG),)
+＃USER_C_SOURCES += apps/modules/app/ftpd/ftpd.c
+#USER_C_SOURCES += apps/modules/app/vfs_disk/pseudo_disk_io.c
+#USER_C_INCLUDES += -Iapps/modules/app/ftpd/vfs_ramdisk
+#C_SOURCES := $(filter-out Middlewares/Third_Party/FatFs/src/diskio.c ,$(C_SOURCES))
 USER_C_SOURCES += apps/modules/app/vfs_disk/vfs.c
 USER_C_SOURCES += apps/modules/app/mt_file.c
+endif
 USER_C_SOURCES += apps/modules/app/can_data_task.c
 USER_C_SOURCES += apps/modules/app/uart_data_task.c
 #USER_C_SOURCES += apps/modules/app/duty_cycle_pattern.c
@@ -134,18 +140,43 @@ USER_C_SOURCES += apps/modules/app/voice.c
 endif
 ifeq ($(call ifdef_any_of,DISABLE_POWER_MANAGER),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules.c
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_NONE),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_none.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_PSEUDO),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_pseudo.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_HUAWEI),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_huawei.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_INCREASE),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_increase.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_INFY),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_infy.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_STATEGRID),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_stategrid.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_YYLN),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_yyln.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_WINLINE),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_winline.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_ZTE),)
 USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_zte.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MODULES_HANDLER_INFY_V2G),)
+USER_C_SOURCES += apps/modules/app/power_modules/power_modules_handler_infy_v2g.c
+endif
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager.c
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager_handler_native.c
 USER_C_SOURCES += apps/modules/app/power_manager/power_manager_group_policy_chain.c
+endif
+ifneq ($(call ifdef_any_of,POWER_MANAGER_CHANNEL_PROXY_LOCAL),)
+USER_C_SOURCES += apps/modules/app/power_manager/power_manager_channel_comm_proxy.c
+USER_C_SOURCES += apps/modules/app/power_manager/power_manager_channel_comm_proxy_local.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/channels_config_helper.c
 USER_C_SOURCES += apps/modules/app/charger/channels.c
@@ -167,7 +198,7 @@ USER_C_SOURCES += apps/modules/app/charger/multi_charge_comm_proxy.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/charger.c
 USER_C_SOURCES += apps/modules/app/charger/charger_bms.c
-ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB CHARGER_BMS_HANDLER_PLC_CCS CHARGER_BMS_HANDLER_GB_MULTI_CHARGE),)
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB CHARGER_BMS_HANDLER_GB_V2G CHARGER_BMS_HANDLER_PLC_CCS CHARGER_BMS_HANDLER_GB_MULTI_CHARGE),)
 USER_C_SOURCES += apps/modules/app/bms_multi_data.c
 endif
 USER_C_SOURCES += apps/modules/app/charger/function_board.c
@@ -179,6 +210,9 @@ USER_C_SOURCES += apps/modules/app/charger/function_board_handler_v5.c
 endif
 ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB),)
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb.c
+endif
+ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_GB_V2G),)
+USER_C_SOURCES += apps/modules/app/charger/charger_bms_gb_v2g.c
 endif
 ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_PLC_CCS),)
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_plc_ccs.c
@@ -195,19 +229,42 @@ endif
 ifneq ($(call ifdef_any_of,CHARGER_BMS_HANDLER_NOBMS),)
 USER_C_SOURCES += apps/modules/app/charger/charger_bms_nobms.c
 endif
+ifneq ($(call ifdef_any_of,ENERGY_METER),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_DC),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dc.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_AC),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_AC_HLW8032),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_hlw8032.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_AC_SDM_220),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_sdm_220.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_AC_SDM_630),)
 USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_ac_sdm_630.c
+endif
+ifneq ($(call ifdef_any_of,ENERGY_METER_DCM3366D_J_G),)
+USER_C_SOURCES += apps/modules/app/charger/energy_meter_handler_dcm3366d_j_g.c
+endif
 USER_C_SOURCES += apps/modules/app/charger/channel_record.c
 ifeq ($(call ifdef_any_of,DISABLE_CARDREADER),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader.c
+ifneq ($(call ifdef_any_of,CARD_READER_HANDLER_PSEUDO),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_pseudo.c
+endif
+ifneq ($(call ifdef_any_of,CARD_READER_HANDLER_ZLG),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_zlg.c
+endif
+ifneq ($(call ifdef_any_of,CARD_READER_HANDLER_MT_318_626),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_626.c
+endif
+ifneq ($(call ifdef_any_of,CARD_READER_HANDLER_MT_318_628),)
 USER_C_SOURCES += apps/modules/app/charger/card_reader_handler_mt_318_628.c
+endif
 endif
 ifneq ($(call ifdef_any_of,FAN_CONTROL),)
 USER_C_SOURCES += apps/modules/app/charger/fan_control.c
@@ -227,14 +284,23 @@ USER_C_SOURCES += apps/modules/hardware/modbus_slave_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_master_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_spec.c
 USER_C_SOURCES += apps/modules/hardware/storage.c
-ifneq ($(call ifdef_any_of,STORAGE_OPS_25LC1024),)
-USER_C_SOURCES += apps/modules/hardware/storage_25lc1024.c
-endif
 ifneq ($(call ifdef_any_of,STORAGE_OPS_24LC128),)
 USER_C_SOURCES += apps/modules/hardware/storage_24lc128.c
 endif
+ifneq ($(call ifdef_any_of,STORAGE_OPS_AT24C512),)
+USER_C_SOURCES += apps/modules/hardware/storage_at24c512.c
+endif
+ifneq ($(call ifdef_any_of,STORAGE_OPS_25LC1024),)
+USER_C_SOURCES += apps/modules/hardware/storage_25lc1024.c
+endif
+ifneq ($(call ifdef_any_of,STORAGE_OPS_W25Q32),)
+USER_C_SOURCES += apps/modules/hardware/storage_w25q32.c
+endif
 ifneq ($(call ifdef_any_of,STORAGE_OPS_W25Q256),)
 USER_C_SOURCES += apps/modules/hardware/storage_w25q256.c
+endif
+ifneq ($(call ifdef_any_of,STORAGE_OPS_USBDISK),)
+USER_C_SOURCES += apps/modules/hardware/storage_usbdisk.c
 endif
 USER_C_SOURCES += apps/modules/drivers/spi_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_txrx.c
@@ -257,10 +323,10 @@ USER_C_SOURCES += apps/modules/os/object_class.c
 USER_C_SOURCES += apps/modules/os/soft_timer.c
 USER_C_SOURCES += apps/modules/os/retarget.c
 USER_C_SOURCES += apps/modules/os/syscalls.c
-USER_C_SOURCES += apps/modules/tests/test_serial.c
-USER_C_SOURCES += apps/modules/tests/test_event.c
-USER_C_SOURCES += apps/modules/tests/test_storage.c
-USER_C_SOURCES += apps/modules/tests/test_can.c
+#USER_C_SOURCES += apps/modules/tests/test_serial.c
+#USER_C_SOURCES += apps/modules/tests/test_event.c
+#USER_C_SOURCES += apps/modules/tests/test_storage.c
+#USER_C_SOURCES += apps/modules/tests/test_can.c
 
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/def.c
 USER_C_SOURCES += Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c

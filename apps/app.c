@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2022年11月16日 星期三 16时04分25秒
+ *   修改日期：2023年02月21日 星期二 11时24分45秒
  *   描    述：
  *
  *================================================================*/
@@ -19,9 +19,9 @@
 #include "os_utils.h"
 #include "config_layout.h"
 
-#include "test_serial.h"
-#include "test_event.h"
-#include "test_can.h"
+//#include "test_serial.h"
+//#include "test_event.h"
+//#include "test_can.h"
 #include "file_log.h"
 #include "probe_tool.h"
 #include "net_client.h"
