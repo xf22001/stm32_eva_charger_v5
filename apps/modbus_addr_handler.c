@@ -6,7 +6,7 @@
  *   文件名称：modbus_addr_handler.c
  *   创 建 者：肖飞
  *   创建日期：2022年08月04日 星期四 10时34分58秒
- *   修改日期：2023年02月15日 星期三 15时53分11秒
+ *   修改日期：2023年03月07日 星期二 09时03分43秒
  *   描    述：
  *
  *================================================================*/
@@ -19,6 +19,9 @@
 #include "app.h"
 #include "channel.h"
 #include "power_manager.h"
+#if !defined(DISABLE_CARDREADER)
+#include "card_reader.h"
+#endif
 
 #define LOG_DISABLE
 #include "log.h"
@@ -1119,10 +1122,37 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 			modbus_data_value_r(modbus_data_ctx, 0);
 
 			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				switch(channels_info->display_cache_channels.popup_type) {
+					case MODBUS_POPUP_TYPE_SWIPE_CARD: {
+						card_reader_info_t *card_reader_info = (card_reader_info_t *)channels_info->card_reader_info;
+						stop_card_reader(card_reader_info);
+					}
+					break;
+
+					default: {
+					}
+					break;
+				}
+
 				channels_info->display_cache_channels.popup_type = MODBUS_POPUP_TYPE_NONE;
 			}
 		}
 		break;
+
+		case add_modbus_data_get_set_buffer_case(SYS_TIME): {
+			modbus_data_buffer_rw(modbus_data_ctx, app_info->display_cache_app.sys_time, 6 * 2, modbus_data_ctx->addr - modbus_data_get_set_buffer_start(SYS_TIME));
+		}
+		break;
+
+		case add_modbus_data_get_set_item_case(TIME_SYNC): {
+			modbus_data_value_rw(modbus_data_ctx, app_info->display_cache_app.time_sync);
+
+			if(modbus_data_ctx->action == MODBUS_DATA_ACTION_SET) {
+				app_info->display_cache_app.sys_time_sync = 1;
+			}
+		}
+		break;
+
 
 		case add_modbus_data_get_set_item_case(CARD_READER_TYPE): {
 			modbus_data_value_rw(modbus_data_ctx, channels_settings->card_reader_settings.type);
@@ -1318,6 +1348,26 @@ void channels_modbus_data_action(void *fn_ctx, void *chain_ctx)
 
 		case add_modbus_data_get_set_item_case(CHANNEL_NUMBER): {
 			modbus_data_value_r(modbus_data_ctx, channels_info->channel_number);
+		}
+		break;
+
+		case add_modbus_data_get_set_item_case(POWER_MOUDLE_NUMBER): {
+			modbus_data_value_r(modbus_data_ctx, channels_info->power_module_number);
+		}
+		break;
+
+		case add_modbus_data_get_set_item_case(VER_MINOR): {
+			modbus_data_value_r(modbus_data_ctx, VER_MINOR);
+		}
+		break;
+
+		case add_modbus_data_get_set_item_case(VER_REV): {
+			modbus_data_value_r(modbus_data_ctx, VER_REV);
+		}
+		break;
+
+		case add_modbus_data_get_set_item_case(VER_MAJOR): {
+			modbus_data_value_r(modbus_data_ctx, VER_MAJOR);
 		}
 		break;
 

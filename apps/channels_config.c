@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年01月17日 星期二 09时35分01秒
+ *   修改日期：2023年03月08日 星期三 14时42分00秒
  *   描    述：
  *
  *================================================================*/
@@ -80,10 +80,14 @@ static channel_config_t channel0_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
-		.output_relay_gpio = GPIOD,
-		.output_relay_pin = GPIO_PIN_11,
-		.output_relay_gpio_fb = GPIOG,
-		.output_relay_pin_fb = GPIO_PIN_4,
+		.output_relay_gpio_p = GPIOD,
+		.output_relay_pin_p = GPIO_PIN_11,
+		.output_relay_gpio_n = GPIOD,
+		.output_relay_pin_n = GPIO_PIN_11,
+		.output_relay_gpio_fb_p = GPIOG,
+		.output_relay_pin_fb_p = GPIO_PIN_4,
+		.output_relay_gpio_fb_n = GPIOG,
+		.output_relay_pin_fb_n = GPIO_PIN_4,
 		.hcan_bms = &hcan2,
 		.relay_charger_lock_p_gpio = GPIOD,
 		.relay_charger_lock_p_pin = GPIO_PIN_13,
@@ -116,10 +120,6 @@ static channel_config_t channel0_config = {
 	.charger_temperature_n_adc_rank = 9,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
-	.adhe_p_gpio = GPIOG,
-	.adhe_p_pin = GPIO_PIN_4,
-	.adhe_n_gpio = GPIOG,
-	.adhe_n_pin = GPIO_PIN_4,
 	//.fault_port = GPIOI,
 	//.fault_pin = GPIO_PIN_8,
 	.led_charge_port = GPIOF,
@@ -143,10 +143,14 @@ static channel_config_t channel1_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
-		.output_relay_gpio = GPIOG,
-		.output_relay_pin = GPIO_PIN_9,
-		.output_relay_gpio_fb = GPIOG,
-		.output_relay_pin_fb = GPIO_PIN_10,
+		.output_relay_gpio_p = GPIOG,
+		.output_relay_pin_p = GPIO_PIN_9,
+		.output_relay_gpio_n = GPIOG,
+		.output_relay_pin_n = GPIO_PIN_9,
+		.output_relay_gpio_fb_p = GPIOG,
+		.output_relay_pin_fb_p = GPIO_PIN_10,
+		.output_relay_gpio_fb_n = GPIOG,
+		.output_relay_pin_fb_n = GPIO_PIN_10,
 		.hcan_bms = &hspi3,
 		.relay_charger_lock_p_gpio = GPIOG,
 		.relay_charger_lock_p_pin = GPIO_PIN_12,
@@ -179,10 +183,6 @@ static channel_config_t channel1_config = {
 	.charger_temperature_n_adc_rank = 0,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
-	.adhe_p_gpio = GPIOG,
-	.adhe_p_pin = GPIO_PIN_10,
-	.adhe_n_gpio = GPIOG,
-	.adhe_n_pin = GPIO_PIN_10,
 	//.fault_port = GPIOF,
 	//.fault_pin = GPIO_PIN_0,
 	.led_charge_port = GPIOI,
