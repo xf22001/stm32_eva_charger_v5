@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2023年02月21日 星期二 11时23分58秒
+#   修改日期：2023年03月14日 星期二 13时58分19秒
 #   描    述：
 #
 #================================================================
@@ -22,7 +22,7 @@ USER_C_INCLUDES += -Iapps
 USER_C_INCLUDES += -Iapps/modules
 USER_C_INCLUDES += -Iapps/modules/os
 USER_C_INCLUDES += -Iapps/modules/drivers
-ifneq ($(call ifdef_any_of,SPI_CAN),)
+ifneq ($(call ifdef_any_of,SPI_CAN_MCP2518),)
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/canfdspi
 USER_C_INCLUDES += -Iapps/modules/drivers/mcp2518/mcp25xxfd_driver/spi
@@ -73,7 +73,7 @@ USER_C_SOURCES += apps/power_manager_group_policy_config.c
 ifneq ($(call ifdef_any_of,SAL_WIZNET),)
 USER_C_SOURCES += apps/wiznet_spi.c
 endif
-ifneq ($(call ifdef_any_of,SPI_CAN),)
+ifneq ($(call ifdef_any_of,SPI_CAN_MCP2518),)
 USER_C_SOURCES += apps/exti.c
 endif
 
@@ -284,6 +284,7 @@ USER_C_SOURCES += apps/modules/hardware/modbus_slave_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_master_txrx.c
 USER_C_SOURCES += apps/modules/hardware/modbus_spec.c
 USER_C_SOURCES += apps/modules/hardware/storage.c
+USER_C_SOURCES += apps/modules/hardware/storage_cache.c
 ifneq ($(call ifdef_any_of,STORAGE_OPS_24LC128),)
 USER_C_SOURCES += apps/modules/hardware/storage_24lc128.c
 endif
@@ -305,9 +306,9 @@ endif
 USER_C_SOURCES += apps/modules/drivers/spi_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_txrx.c
 USER_C_SOURCES += apps/modules/drivers/can_ops_hal.c
-ifneq ($(call ifdef_any_of,SPI_CAN),)
+ifneq ($(call ifdef_any_of,SPI_CAN_MCP2518),)
 USER_C_SOURCES += apps/modules/drivers/mcp2518/mcp25xxfd_driver/canfdspi/drv_canfdspi_api.c
-USER_C_SOURCES += apps/modules/drivers/can_ops_spi_can.c
+USER_C_SOURCES += apps/modules/drivers/can_ops_spi_can_mcp2518.c
 endif
 USER_C_SOURCES += apps/modules/drivers/usart_txrx.c
 USER_C_SOURCES += apps/modules/drivers/i2c_txrx.c

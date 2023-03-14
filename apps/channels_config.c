@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月08日 星期三 14时42分00秒
+ *   修改日期：2023年03月14日 星期二 17时21分30秒
  *   描    述：
  *
  *================================================================*/
@@ -14,6 +14,7 @@
 #include "os_utils.h"
 #include "power_modules.h"
 #include "hw_adc.h"
+#include "main.h"
 
 #include "log.h"
 
@@ -31,9 +32,9 @@ extern ADC_HandleTypeDef hadc3;
 
 static energy_meter_config_item_t energy_meter_config_item_0_0 = {
 	.type = ENERGY_METER_TYPE_DC,
-	.huart = &huart4,
-	.led_gpio = GPIOE,
-	.led_pin = GPIO_PIN_13,
+	.huart = &huart3,
+	.led_gpio = DC_METER1_LED_GPIO_Port,
+	.led_pin = DC_METER1_LED_Pin,
 };
 
 static energy_meter_config_item_t *energy_meter_config_item_0_sz[] = {
@@ -66,10 +67,10 @@ function_board_config_item_t function_board_config_item_1_0 = {
 	.battery_voltage_adc_rank = 7,
 	.insulation_voltage_adc = &hadc3,
 	.insulation_voltage_adc_rank = 4,
-	.insulation_k1_gpio = GPIOG,
-	.insulation_k1_pin = GPIO_PIN_6,
-	.insulation_k3_gpio = GPIOG,
-	.insulation_k3_pin = GPIO_PIN_7,
+	.insulation_k1_gpio = K1_PLUG2_GPIO_Port,
+	.insulation_k1_pin = K1_PLUG2_Pin,
+	.insulation_k3_gpio = K3_PLUG2_GPIO_Port,
+	.insulation_k3_pin = K3_PLUG2_Pin,
 };
 
 function_board_config_item_t *function_board_1_sz[] = {
@@ -80,25 +81,25 @@ static channel_config_t channel0_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
-		.output_relay_gpio_p = GPIOD,
-		.output_relay_pin_p = GPIO_PIN_11,
-		.output_relay_gpio_n = GPIOD,
-		.output_relay_pin_n = GPIO_PIN_11,
-		.output_relay_gpio_fb_p = GPIOG,
-		.output_relay_pin_fb_p = GPIO_PIN_4,
-		.output_relay_gpio_fb_n = GPIOG,
-		.output_relay_pin_fb_n = GPIO_PIN_4,
+		.output_relay_gpio_p = MAIN_RLY_PLUG1_GPIO_Port,
+		.output_relay_pin_p = MAIN_RLY_PLUG1_Pin,
+		.output_relay_gpio_n = MAIN_RLY_PLUG1_GPIO_Port,
+		.output_relay_pin_n = MAIN_RLY_PLUG1_Pin,
+		.output_relay_gpio_fb_p = MAIN_RLY_PLUG1_BACK_GPIO_Port,
+		.output_relay_pin_fb_p = MAIN_RLY_PLUG1_BACK_Pin,
+		.output_relay_gpio_fb_n = MAIN_RLY_PLUG1_BACK_GPIO_Port,
+		.output_relay_pin_fb_n = MAIN_RLY_PLUG1_BACK_Pin,
 		.hcan_bms = &hcan2,
-		.relay_charger_lock_p_gpio = GPIOD,
-		.relay_charger_lock_p_pin = GPIO_PIN_13,
-		.relay_charger_lock_n_gpio = GPIOD,
-		.relay_charger_lock_n_pin = GPIO_PIN_14,
-		.charger_lock_state_gpio = GPIOG,
-		.charger_lock_state_pin = GPIO_PIN_5,
-		.charger_auxiliary_power_choose_gpio = GPIOI,
-		.charger_auxiliary_power_choose_pin = GPIO_PIN_9,
-		.charger_auxiliary_power_onoff_gpio = GPIOD,
-		.charger_auxiliary_power_onoff_pin = GPIO_PIN_12,
+		.relay_charger_lock_p_gpio = PLUG1_LOCK_1_GPIO_Port,
+		.relay_charger_lock_p_pin = PLUG1_LOCK_1_Pin,
+		.relay_charger_lock_n_gpio = PLUG1_LOCK_2_GPIO_Port,
+		.relay_charger_lock_n_pin = PLUG1_LOCK_2_Pin,
+		.charger_lock_state_gpio = PLUG1_LOCK_BACK_GPIO_Port,
+		.charger_lock_state_pin = PLUG1_LOCK_BACK_Pin,
+		.charger_auxiliary_power_choose_gpio = VTRANS_1_12V_24_GPIO_Port,
+		.charger_auxiliary_power_choose_pin = VTRANS_1_12V_24_Pin,
+		.charger_auxiliary_power_onoff_gpio = BMSPOWER_PLUG1_GPIO_Port,
+		.charger_auxiliary_power_onoff_pin = BMSPOWER_PLUG1_Pin,
 	},
 	.energy_meter_config = {
 		.default_type = ENERGY_METER_TYPE_DC,
@@ -120,19 +121,19 @@ static channel_config_t channel0_config = {
 	.charger_temperature_n_adc_rank = 9,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
-	//.fault_port = GPIOI,
-	//.fault_pin = GPIO_PIN_8,
-	.led_charge_port = GPIOF,
-	.led_charge_pin = GPIO_PIN_1,
-	.led_full_port = GPIOE,
-	.led_full_pin = GPIO_PIN_5,
+	//.fault_port = LED_RED_PLUG1_GPIO_Port,
+	//.fault_pin = LED_RED_PLUG1_Pin,
+	.led_charge_port = LED_GREEN_POWER1_GPIO_Port,
+	.led_charge_pin = LED_GREEN_POWER1_Pin,
+	.led_full_port = LED_YELLOW_PLUG1_GPIO_Port,
+	.led_full_pin = LED_YELLOW_PLUG1_Pin,
 };
 
 static energy_meter_config_item_t energy_meter_config_item_1_0 = {
 	.type = ENERGY_METER_TYPE_DC,
 	.huart = &huart3,
-	.led_gpio = GPIOE,
-	.led_pin = GPIO_PIN_14,
+	.led_gpio = DC_METER2_LED_GPIO_Port,
+	.led_pin = DC_METER2_LED_Pin,
 };
 
 static energy_meter_config_item_t *energy_meter_config_item_1_sz[] = {
@@ -143,25 +144,25 @@ static channel_config_t channel1_config = {
 	.channel_type = CHANNEL_TYPE_NATIVE,
 	.charger_config = {
 		.charger_type = CHANNEL_CHARGER_BMS_TYPE_GB,
-		.output_relay_gpio_p = GPIOG,
-		.output_relay_pin_p = GPIO_PIN_9,
-		.output_relay_gpio_n = GPIOG,
-		.output_relay_pin_n = GPIO_PIN_9,
-		.output_relay_gpio_fb_p = GPIOG,
-		.output_relay_pin_fb_p = GPIO_PIN_10,
-		.output_relay_gpio_fb_n = GPIOG,
-		.output_relay_pin_fb_n = GPIO_PIN_10,
+		.output_relay_gpio_p = MAIN_RLY_PLUG2_GPIO_Port,
+		.output_relay_pin_p = MAIN_RLY_PLUG2_Pin,
+		.output_relay_gpio_n = MAIN_RLY_PLUG2_GPIO_Port,
+		.output_relay_pin_n = MAIN_RLY_PLUG2_Pin,
+		.output_relay_gpio_fb_p = MAIN_RLY_PLUG2_BACK_GPIO_Port,
+		.output_relay_pin_fb_p = MAIN_RLY_PLUG2_BACK_Pin,
+		.output_relay_gpio_fb_n = MAIN_RLY_PLUG2_BACK_GPIO_Port,
+		.output_relay_pin_fb_n = MAIN_RLY_PLUG2_BACK_Pin,
 		.hcan_bms = &hspi3,
-		.relay_charger_lock_p_gpio = GPIOG,
-		.relay_charger_lock_p_pin = GPIO_PIN_12,
-		.relay_charger_lock_n_gpio = GPIOG,
-		.relay_charger_lock_n_pin = GPIO_PIN_13,
-		.charger_lock_state_gpio = GPIOG,
-		.charger_lock_state_pin = GPIO_PIN_14,
-		.charger_auxiliary_power_choose_gpio = GPIOI,
-		.charger_auxiliary_power_choose_pin = GPIO_PIN_10,
-		.charger_auxiliary_power_onoff_gpio = GPIOG,
-		.charger_auxiliary_power_onoff_pin = GPIO_PIN_11,
+		.relay_charger_lock_p_gpio = PLUG2_LOCK_1_GPIO_Port,
+		.relay_charger_lock_p_pin = PLUG2_LOCK_1_Pin,
+		.relay_charger_lock_n_gpio = PLUG2_LOCK_2_GPIO_Port,
+		.relay_charger_lock_n_pin = PLUG2_LOCK_2_Pin,
+		.charger_lock_state_gpio = PLUG2_LOCK_BACK_GPIO_Port,
+		.charger_lock_state_pin = PLUG2_LOCK_BACK_Pin,
+		.charger_auxiliary_power_choose_gpio = MAIN_RLY_PLUG2_BACK_GPIO_Port,
+		.charger_auxiliary_power_choose_pin = MAIN_RLY_PLUG2_BACK_Pin,
+		.charger_auxiliary_power_onoff_gpio = BMSPOWER_PLUG2_GPIO_Port,
+		.charger_auxiliary_power_onoff_pin = BMSPOWER_PLUG2_Pin,
 	},
 	.energy_meter_config = {
 		.default_type = ENERGY_METER_TYPE_DC,
@@ -183,12 +184,12 @@ static channel_config_t channel1_config = {
 	.charger_temperature_n_adc_rank = 0,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
-	//.fault_port = GPIOF,
-	//.fault_pin = GPIO_PIN_0,
-	.led_charge_port = GPIOI,
-	.led_charge_pin = GPIO_PIN_11,
-	.led_full_port = GPIOE,
-	.led_full_pin = GPIO_PIN_6,
+	//.fault_port = LED_RED_PLUG2_GPIO_Port,
+	//.fault_pin = LED_RED_PLUG2_Pin,
+	.led_charge_port = LED_GREEN_POWER2_GPIO_Port,
+	.led_charge_pin = LED_GREEN_POWER2_Pin,
+	.led_full_port = LED_YELLOW_PLUG2_GPIO_Port,
+	.led_full_pin = LED_YELLOW_PLUG2_Pin,
 };
 
 static channel_config_t *channel_config_sz[] = {
@@ -216,7 +217,7 @@ static channels_config_t channels_config_0 = {
 	.channel_config = channel_config_sz,
 	.power_module_config = {
 		.hcan = &hcan1,
-		.power_module_default_type = POWER_MODULE_TYPE_WINLINE,
+		.power_module_default_type = POWER_MODULE_TYPE_STATEGRID,
 	},
 	.power_manager_config = {
 		.power_manager_default_type = POWER_MANAGER_TYPE_NATIVE,
@@ -229,23 +230,26 @@ static channels_config_t channels_config_0 = {
 		.items = card_reader_config_item_sz,
 	},
 	.display_config = {
-		//.huart = &huart6,
+		.huart = &huart6,
+		.station = 2,
 	},
 	.proxy_channel_info = {
 		.hcan = &hcan1,
 	},
 	.board_temperature_adc = &hadc3,
 	.board_temperature_adc_rank = 8,
-	.force_stop_port = GPIOF,
-	.force_stop_pin = GPIO_PIN_2,
+	.force_stop_port = EPO_GPIO_Port,
+	.force_stop_pin = EPO_Pin,
 	.force_stop_normal_state = GPIO_PIN_RESET,
-	.fan_port = GPIOG,
-	.fan_pin = GPIO_PIN_1,
-	.door_port = GPIOE,
-	.door_pin = GPIO_PIN_7,
+	.fan_port = FAN1_RLY_DRV_GPIO_Port,
+	.fan_pin = FAN1_RLY_DRV_Pin,
+	.door_port = DOOR1_OPEN_GPIO_Port,
+	.door_pin = DOOR1_OPEN_Pin,
 	.door_normal_state = GPIO_PIN_RESET,
-	.fault_port = GPIOI,
-	.fault_pin = GPIO_PIN_8,
+	.fault_port = LED_RED_PLUG1_GPIO_Port,
+	.fault_pin = LED_RED_PLUG1_Pin,
+	.power_supply_port = CONTACTOR_DRV_GPIO_Port,
+	.power_supply_pin = CONTACTOR_DRV_Pin,
 };
 
 static channels_config_t *channels_config_sz[] = {

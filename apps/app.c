@@ -6,7 +6,7 @@
  *   文件名称：app.c
  *   创 建 者：肖飞
  *   创建日期：2019年10月11日 星期五 16时54分03秒
- *   修改日期：2023年02月21日 星期二 11时24分45秒
+ *   修改日期：2023年03月14日 星期二 15时45分25秒
  *   描    述：
  *
  *================================================================*/
@@ -34,6 +34,7 @@
 //#include "duty_cycle_pattern.h"
 #include "channels_notify_voice.h"
 #include "vfs.h"
+#include "storage_cache.h"
 
 #include "sal_socket.h"
 #include "sal_netdev.h"
@@ -225,144 +226,6 @@ uint8_t app_get_reset_config(void)
 	return reset_config;
 }
 
-#define CACHE_STORAGE_SECTOR_SIZE 4096
-#define CACHE_STORAGE_MAGIC 0x73
-
-#pragma pack(push, 1)
-typedef struct {
-	uint8_t cache[CACHE_STORAGE_SECTOR_SIZE];
-	uint8_t magic;//CACHE_STORAGE_MAGIC
-	uint32_t addr;
-	uint8_t valid;
-} cache_storage_layout_t;
-#pragma pack(pop)
-
-static void cache_storage_callback(void *fn_ctx, void *chain_ctx)
-{
-	storage_info_t *storage_info = (storage_info_t *)fn_ctx;
-	cache_event_ctx_t *cache_event_ctx = (cache_event_ctx_t *)chain_ctx;
-	cache_storage_layout_t *cache_storage_layout = (cache_storage_layout_t *)0;
-	uint32_t addr = cache_event_ctx->addr;
-	size_t start = cache_event_ctx->start;
-	size_t size = cache_event_ctx->size;
-	uint8_t *cache = cache_event_ctx->cache;
-	size_t offset;
-
-	switch(cache_event_ctx->cache_event_action) {
-		case CACHE_EVENT_ACTION_INVALID: {
-			uint8_t valid = 0;
-
-			mutex_lock(storage_info->action_mutex);
-
-			offset = (size_t)&cache_storage_layout->valid;
-
-			while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
-				debug("");
-			}
-
-			debug("CACHE_EVENT_ACTION_INVALID");
-
-			mutex_unlock(storage_info->action_mutex);
-		}
-		break;
-
-		case CACHE_EVENT_ACTION_UPDATE: {
-			uint8_t valid = 1;
-
-			mutex_lock(storage_info->action_mutex);
-
-			offset = (size_t)&cache_storage_layout->cache[0];
-
-			while(storage_write(storage_info, offset + start, cache + start, size) != 0) {
-				debug("");
-			}
-
-			offset = (size_t)&cache_storage_layout->addr;
-
-			while(storage_write(storage_info, offset, (uint8_t *)&addr, sizeof(addr)) != 0) {
-				debug("");
-			}
-
-			offset = (size_t)&cache_storage_layout->valid;
-
-			while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
-				debug("");
-			}
-
-			debug("CACHE_EVENT_ACTION_UPDATE addr:0x%x, start:%d, size:%d", addr, start, size);
-
-			mutex_unlock(storage_info->action_mutex);
-		}
-		break;
-
-		case CACHE_EVENT_ACTION_RESTORE: {
-			uint8_t magic;
-			uint8_t valid;
-
-			cache_event_ctx->cache_event_action = CACHE_EVENT_ACTION_NONE;
-
-			mutex_lock(storage_info->action_mutex);
-
-			offset = (size_t)&cache_storage_layout->magic;
-
-			while(storage_read(storage_info, offset, (uint8_t *)&magic, sizeof(magic)) != 0) {
-				debug("");
-			}
-
-			debug("magic %x", magic);
-
-			if(magic == CACHE_STORAGE_MAGIC) {
-				offset = (size_t)&cache_storage_layout->valid;
-
-				while(storage_read(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
-					debug("");
-				}
-
-				debug("valid %d", valid);
-
-				if(valid == 1) {
-					offset = (size_t)&cache_storage_layout->addr;
-
-					while(storage_read(storage_info, offset, (uint8_t *)&addr, sizeof(addr)) != 0) {
-						debug("");
-					}
-
-					cache_event_ctx->addr = addr;
-					offset = (size_t)&cache_storage_layout->cache[0];
-
-					while(storage_read(storage_info, offset, cache, CACHE_STORAGE_SECTOR_SIZE) != 0) {
-						debug("");
-					}
-
-					cache_event_ctx->cache_event_action = CACHE_EVENT_ACTION_UPDATE;
-					debug("CACHE_EVENT_ACTION_RESTORE addr:%x", addr);
-				}
-			} else {
-				magic = CACHE_STORAGE_MAGIC;
-				offset = (size_t)&cache_storage_layout->magic;
-
-				while(storage_write(storage_info, offset, (uint8_t *)&magic, sizeof(magic)) != 0) {
-					debug("");
-				}
-
-				valid = 0;
-				offset = (size_t)&cache_storage_layout->valid;
-
-				while(storage_write(storage_info, offset, (uint8_t *)&valid, sizeof(valid)) != 0) {
-					debug("");
-				}
-			}
-
-			mutex_unlock(storage_info->action_mutex);
-		}
-		break;
-
-		default: {
-		}
-		break;
-	}
-}
-
 #if defined(STORAGE_OPS_USBDISK)
 static void wait_usbdisk(void)
 {
@@ -437,7 +300,7 @@ void app(void const *argument)
 	ret = app_load_config();
 
 	if(ret == 0) {
-		//app_info->mechine_info.reset_config = 1;
+		app_info->mechine_info.reset_config = 1;
 		debug("app load config successful!");
 		reset_config = app_info->mechine_info.reset_config;
 
