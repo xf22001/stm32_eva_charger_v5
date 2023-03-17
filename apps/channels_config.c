@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月14日 星期二 17时21分30秒
+ *   修改日期：2023年03月17日 星期五 09时47分02秒
  *   描    述：
  *
  *================================================================*/
@@ -120,7 +120,7 @@ static channel_config_t channel0_config = {
 	.charger_temperature_n_adc = &hadc3,
 	.charger_temperature_n_adc_rank = 9,
 	.cp_ad_adc = &hadc1,
-	.cp_ad_adc_rank = 0,
+	.cp_ad_adc_rank = 1,
 	//.fault_port = LED_RED_PLUG1_GPIO_Port,
 	//.fault_pin = LED_RED_PLUG1_Pin,
 	.led_charge_port = LED_GREEN_POWER1_GPIO_Port,
@@ -183,7 +183,7 @@ static channel_config_t channel1_config = {
 	.charger_temperature_n_adc = &hadc3,
 	.charger_temperature_n_adc_rank = 0,
 	.cp_ad_adc = &hadc1,
-	.cp_ad_adc_rank = 1,
+	.cp_ad_adc_rank = 0,
 	//.fault_port = LED_RED_PLUG2_GPIO_Port,
 	//.fault_pin = LED_RED_PLUG2_Pin,
 	.led_charge_port = LED_GREEN_POWER2_GPIO_Port,
@@ -309,6 +309,7 @@ int adc_value_helper(adc_value_type_t adc_value_type, void *ctx)
 			//V = u / (1.8667 / 101.8667 * 8 * 4 / 3) + 0.5
 
 			value = value * 5.1159817458616805 / 10 + 50;
+			//debug("channel %d cp voltage:%d", channel_info->channel_id, value);
 		}
 		break;
 

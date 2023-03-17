@@ -299,6 +299,7 @@ void Error_Handler(void);
 #define POWERDISTRIBUTION_3_GPIO_Port GPIOI
 #define POWERDISTRIBUTION_4_Pin GPIO_PIN_7
 #define POWERDISTRIBUTION_4_GPIO_Port GPIOI
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

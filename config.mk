@@ -6,7 +6,7 @@
 #   文件名称：config.mk
 #   创 建 者：肖飞
 #   创建日期：2021年08月26日 星期四 11时10分19秒
-#   修改日期：2023年03月14日 星期二 14时52分25秒
+#   修改日期：2023年03月15日 星期三 10时20分36秒
 #   描    述：
 #
 #================================================================
@@ -32,7 +32,7 @@ CONFIG_LIST += ENERGY_METER
 CONFIG_LIST += ENERGY_METER_DC
 #CONFIG_LIST += ENERGY_METER_AC_SDM_220
 #CONFIG_LIST += ENERGY_METER_AC_SDM_630
-CONFIG_LIST += ENERGY_METER_DCM3366D_J_G
+#CONFIG_LIST += ENERGY_METER_DCM3366D_J_G
 #CONFIG_LIST += ENERGY_METER_PROXY
 
 #CONFIG_LIST += NET_CLIENT_PROTOCOL_UDP
