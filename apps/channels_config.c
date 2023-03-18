@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月17日 星期五 09时47分02秒
+ *   修改日期：2023年03月18日 星期六 16时59分36秒
  *   描    述：
  *
  *================================================================*/
@@ -159,8 +159,8 @@ static channel_config_t channel1_config = {
 		.relay_charger_lock_n_pin = PLUG2_LOCK_2_Pin,
 		.charger_lock_state_gpio = PLUG2_LOCK_BACK_GPIO_Port,
 		.charger_lock_state_pin = PLUG2_LOCK_BACK_Pin,
-		.charger_auxiliary_power_choose_gpio = MAIN_RLY_PLUG2_BACK_GPIO_Port,
-		.charger_auxiliary_power_choose_pin = MAIN_RLY_PLUG2_BACK_Pin,
+		.charger_auxiliary_power_choose_gpio = VTRANS_2_12V_24_GPIO_Port,
+		.charger_auxiliary_power_choose_pin = VTRANS_2_12V_24_Pin,
 		.charger_auxiliary_power_onoff_gpio = BMSPOWER_PLUG2_GPIO_Port,
 		.charger_auxiliary_power_onoff_pin = BMSPOWER_PLUG2_Pin,
 	},
