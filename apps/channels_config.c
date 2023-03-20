@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月20日 星期一 10时54分16秒
+ *   修改日期：2023年03月20日 星期一 14时39分25秒
  *   描    述：
  *
  *================================================================*/
@@ -122,8 +122,8 @@ static channel_config_t channel0_config = {
 	.charger_temperature_n_adc_rank = 9,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
-	//.fault_port = LED_RED_PLUG1_GPIO_Port,
-	//.fault_pin = LED_RED_PLUG1_Pin,
+	.fault_port = LED_RED_PLUG1_GPIO_Port,
+	.fault_pin = LED_RED_PLUG1_Pin,
 	.led_charge_port = LED_GREEN_POWER1_GPIO_Port,
 	.led_charge_pin = LED_GREEN_POWER1_Pin,
 	.led_full_port = LED_YELLOW_PLUG1_GPIO_Port,
@@ -186,8 +186,8 @@ static channel_config_t channel1_config = {
 	.charger_temperature_n_adc_rank = 0,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
-	//.fault_port = LED_RED_PLUG2_GPIO_Port,
-	//.fault_pin = LED_RED_PLUG2_Pin,
+	.fault_port = LED_RED_PLUG2_GPIO_Port,
+	.fault_pin = LED_RED_PLUG2_Pin,
 	.led_charge_port = LED_GREEN_POWER2_GPIO_Port,
 	.led_charge_pin = LED_GREEN_POWER2_Pin,
 	.led_full_port = LED_YELLOW_PLUG2_GPIO_Port,
@@ -248,8 +248,6 @@ static channels_config_t channels_config_0 = {
 	.door_port = DOOR1_OPEN_GPIO_Port,
 	.door_pin = DOOR1_OPEN_Pin,
 	.door_normal_state = GPIO_PIN_RESET,
-	.fault_port = LED_RED_PLUG1_GPIO_Port,
-	.fault_pin = LED_RED_PLUG1_Pin,
 	.power_supply_port = CONTACTOR_DRV_GPIO_Port,
 	.power_supply_pin = CONTACTOR_DRV_Pin,
 };
