@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月20日 星期一 14时39分25秒
+ *   修改日期：2023年03月20日 星期一 16时44分13秒
  *   描    述：
  *
  *================================================================*/
@@ -23,8 +23,8 @@ extern CAN_HandleTypeDef hcan2;//charger1
 extern SPI_HandleTypeDef hspi3;//charger2
 extern UART_HandleTypeDef huart1;//CARD READER
 extern UART_HandleTypeDef huart2;//4G
-extern UART_HandleTypeDef huart3;//METER2
-extern UART_HandleTypeDef huart4;//METER1
+extern UART_HandleTypeDef huart3;//METER1 METER2 FAN
+extern UART_HandleTypeDef huart4;//
 extern UART_HandleTypeDef huart5;//EXTEND
 extern UART_HandleTypeDef huart6;//DISPLAY
 extern ADC_HandleTypeDef hadc1;
@@ -213,6 +213,15 @@ static card_reader_config_item_t *card_reader_config_item_sz[] = {
 	&card_reader_config_item_0,
 };
 
+static fan_control_config_item_t fan_control_config_item_0 = {
+	.type = FAN_CONTROL_TYPE_STC12,
+	.huart = &huart3,
+};
+
+static fan_control_config_item_t *fan_control_config_item_sz[] = {
+	&fan_control_config_item_0,
+};
+
 static channels_config_t channels_config_0 = {
 	.id = 0,
 	.channel_number = ARRAY_SIZE(channel_config_sz),
@@ -230,6 +239,11 @@ static channels_config_t channels_config_0 = {
 		.default_type = CARD_READER_TYPE_ZLG,
 		.size = ARRAY_SIZE(card_reader_config_item_sz),
 		.items = card_reader_config_item_sz,
+	},
+	.fan_control_config = {
+		.default_type = FAN_CONTROL_TYPE_STC12,
+		.size = ARRAY_SIZE(fan_control_config_item_sz),
+		.items = fan_control_config_item_sz,
 	},
 	.display_config = {
 		.huart = &huart6,
