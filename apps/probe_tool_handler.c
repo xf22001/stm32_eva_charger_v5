@@ -6,7 +6,7 @@
  *   文件名称：probe_tool_handler.c
  *   创 建 者：肖飞
  *   创建日期：2020年03月20日 星期五 12时48分07秒
- *   修改日期：2023年02月21日 星期二 11时25分58秒
+ *   修改日期：2023年03月21日 星期二 16时18分59秒
  *   描    述：
  *
  *================================================================*/
@@ -29,6 +29,10 @@
 #include "power_manager.h"
 #endif
 #include "config_layout.h"
+
+#if defined(FAN_CONTROL)
+#include "fan_control.h"
+#endif
 
 #include "sal_hook.h"
 
@@ -665,6 +669,7 @@ static void fn18(request_t *request)
 	} else {
 		_hexdumpf(content, request->header.data_size, "%s", __func__);
 	}
+
 #endif
 }
 
@@ -746,6 +751,28 @@ static void fn20(request_t *request)
 	}
 }
 
+#if defined(FAN_CONTROL)
+static void fn21(request_t *request)
+{
+	char *content = (char *)(request + 1);
+	int fn;
+	int strength;
+	int catched;
+	int ret;
+
+	ret = sscanf(content, "%d %d %n",
+	             &fn,
+	             &strength,
+	             &catched);
+	debug("ret:%d", ret);
+
+	if(ret == 2) {
+		channels_info_t *channels_info = get_channels();
+		fan_control_set_strength((fan_control_info_t *)channels_info->fan_control_info, strength);
+		debug("set fan strength:%d!", strength);
+	}
+}
+#endif
 
 static server_item_t server_map[] = {
 	{1, fn1},
@@ -770,6 +797,9 @@ static server_item_t server_map[] = {
 	{18, fn18},
 	{19, fn19},
 	{20, fn20},
+#if defined(FAN_CONTROL)
+	{21, fn21},
+#endif
 };
 
 server_map_info_t server_map_info = {
