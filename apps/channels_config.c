@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月20日 星期一 16时44分13秒
+ *   修改日期：2023年03月21日 星期二 14时19分39秒
  *   描    述：
  *
  *================================================================*/
@@ -122,12 +122,18 @@ static channel_config_t channel0_config = {
 	.charger_temperature_n_adc_rank = 9,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 1,
-	.fault_port = LED_RED_PLUG1_GPIO_Port,
-	.fault_pin = LED_RED_PLUG1_Pin,
-	.led_charge_port = LED_GREEN_POWER1_GPIO_Port,
-	.led_charge_pin = LED_GREEN_POWER1_Pin,
-	.led_full_port = LED_YELLOW_PLUG1_GPIO_Port,
-	.led_full_pin = LED_YELLOW_PLUG1_Pin,
+	//.fault_port = LED_RED_PLUG1_GPIO_Port,
+	//.fault_pin = LED_RED_PLUG1_Pin,
+	//.led_charge_port = LED_GREEN_POWER1_GPIO_Port,
+	//.led_charge_pin = LED_GREEN_POWER1_Pin,
+	//.led_full_port = LED_YELLOW_PLUG1_GPIO_Port,
+	//.led_full_pin = LED_YELLOW_PLUG1_Pin,
+	.fault_port = CHARGING_LED_LCLK1_GPIO_Port,
+	.fault_pin = CHARGING_LED_LCLK1_Pin,
+	.led_charge_port = CHARGING_LED_SCLK1_GPIO_Port,
+	.led_charge_pin = CHARGING_LED_SCLK1_Pin,
+	.led_full_port = CHARGING_LED_DS1_GPIO_Port,
+	.led_full_pin = CHARGING_LED_DS1_Pin,
 };
 
 static energy_meter_config_item_t energy_meter_config_item_1_0 = {
@@ -186,12 +192,18 @@ static channel_config_t channel1_config = {
 	.charger_temperature_n_adc_rank = 0,
 	.cp_ad_adc = &hadc1,
 	.cp_ad_adc_rank = 0,
-	.fault_port = LED_RED_PLUG2_GPIO_Port,
-	.fault_pin = LED_RED_PLUG2_Pin,
-	.led_charge_port = LED_GREEN_POWER2_GPIO_Port,
-	.led_charge_pin = LED_GREEN_POWER2_Pin,
-	.led_full_port = LED_YELLOW_PLUG2_GPIO_Port,
-	.led_full_pin = LED_YELLOW_PLUG2_Pin,
+	//.fault_port = LED_RED_PLUG2_GPIO_Port,
+	//.fault_pin = LED_RED_PLUG2_Pin,
+	//.led_charge_port = LED_GREEN_POWER2_GPIO_Port,
+	//.led_charge_pin = LED_GREEN_POWER2_Pin,
+	//.led_full_port = LED_YELLOW_PLUG2_GPIO_Port,
+	//.led_full_pin = LED_YELLOW_PLUG2_Pin,
+	.fault_port = CHARGING_LED_LCLK2_Pin,
+	.fault_pin = CHARGING_LED_LCLK2_GPIO_Port,
+	.led_charge_port = CHARGING_LED_SCLK2_GPIO_Port,
+	.led_charge_pin = CHARGING_LED_SCLK2_Pin,
+	.led_full_port = CHARGING_LED_DS2_GPIO_Port,
+	.led_full_pin = CHARGING_LED_DS2_Pin,
 };
 
 static channel_config_t *channel_config_sz[] = {
