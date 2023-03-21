@@ -6,7 +6,7 @@
 #   文件名称：user.mk
 #   创 建 者：肖飞
 #   创建日期：2019年10月25日 星期五 13时04分38秒
-#   修改日期：2023年03月14日 星期二 13时58分19秒
+#   修改日期：2023年03月21日 星期二 11时12分01秒
 #   描    述：
 #
 #================================================================
@@ -60,6 +60,7 @@ USER_C_SOURCES += apps/app.c
 USER_C_SOURCES += apps/uart_debug_handler.c
 USER_C_SOURCES += apps/probe_tool_handler.c
 USER_C_SOURCES += apps/channels_config.c
+USER_C_SOURCES += apps/channels_custom.c
 USER_C_SOURCES += apps/can_config.c
 USER_C_SOURCES += apps/storage_config.c
 ifeq ($(call ifdef_any_of,DISABLE_DISPLAY),)
