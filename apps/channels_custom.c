@@ -6,7 +6,7 @@
  *   文件名称：channels_custom.c
  *   创 建 者：肖飞
  *   创建日期：2023年03月21日 星期二 11时10分17秒
- *   修改日期：2023年03月21日 星期二 16时02分07秒
+ *   修改日期：2023年03月22日 星期三 09时33分00秒
  *   描    述：
  *
  *================================================================*/
@@ -59,10 +59,6 @@ static void handle_channel_led_state(channel_info_t *channel_info, GPIO_PinState
 	if(channel_info->channel_faults != 0) {
 		yellow_state = blink_state;
 	}
-
-	red_state = blink_state;
-	green_state = blink_state;
-	yellow_state = blink_state;
 
 	if(channel_config->fault_port != NULL) {
 		debug("channel %d red_state:%d", channel_info->channel_id, red_state);

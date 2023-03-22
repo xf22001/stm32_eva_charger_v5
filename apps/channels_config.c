@@ -6,7 +6,7 @@
  *   文件名称：channels_config.c
  *   创 建 者：肖飞
  *   创建日期：2021年01月18日 星期一 09时26分44秒
- *   修改日期：2023年03月21日 星期二 14时19分39秒
+ *   修改日期：2023年03月22日 星期三 09时30分27秒
  *   描    述：
  *
  *================================================================*/
@@ -198,8 +198,8 @@ static channel_config_t channel1_config = {
 	//.led_charge_pin = LED_GREEN_POWER2_Pin,
 	//.led_full_port = LED_YELLOW_PLUG2_GPIO_Port,
 	//.led_full_pin = LED_YELLOW_PLUG2_Pin,
-	.fault_port = CHARGING_LED_LCLK2_Pin,
-	.fault_pin = CHARGING_LED_LCLK2_GPIO_Port,
+	.fault_port = CHARGING_LED_LCLK2_GPIO_Port,
+	.fault_pin = CHARGING_LED_LCLK2_Pin,
 	.led_charge_port = CHARGING_LED_SCLK2_GPIO_Port,
 	.led_charge_pin = CHARGING_LED_SCLK2_Pin,
 	.led_full_port = CHARGING_LED_DS2_GPIO_Port,
