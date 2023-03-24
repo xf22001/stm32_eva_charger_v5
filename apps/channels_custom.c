@@ -6,11 +6,12 @@
  *   文件名称：channels_custom.c
  *   创 建 者：肖飞
  *   创建日期：2023年03月21日 星期二 11时10分17秒
- *   修改日期：2023年03月22日 星期三 09时33分00秒
+ *   修改日期：2023年03月24日 星期五 09时37分35秒
  *   描    述：
  *
  *================================================================*/
 #include "channels.h"
+#include "fan_control.h"
 
 #define LOG_DISABLE
 #include "log.h"
@@ -100,8 +101,54 @@ void handle_channels_led_state(channels_info_t *channels_info)
 	}
 }
 
+void handle_channels_fan_state(channels_info_t *channels_info)
+{
+	int i;
+	static uint32_t ticks = 0;
+	uint8_t channels_idle = 1;
+	static uint32_t fan_alive_stamp = 0;
+
+	if(ticks_duration(ticks, osKernelSysTick()) < 1000) {
+		return;
+	}
+
+	ticks = osKernelSysTick();
+
+	for(i = 0; i < channels_info->channel_number; i++) {
+		channel_info_t *channel_info = channels_info->channel_info + i;
+
+		switch(channel_info->state) {
+			case CHANNEL_STATE_IDLE:
+			case CHANNEL_STATE_START:
+			case CHANNEL_STATE_WAITING: {
+			}
+			break;
+
+			default: {
+				channels_idle = 0;
+			}
+			break;
+		}
+
+		if(channels_idle == 0) {
+			break;
+		}
+	}
+
+	if(channels_idle == 0) {
+		fan_alive_stamp = osKernelSysTick();
+	}
+
+	if(ticks_duration(ticks, fan_alive_stamp) < 60 * 1000) {
+		fan_control_set_strength((fan_control_info_t *)channels_info->fan_control_info, 9);
+	} else {
+		fan_control_set_strength((fan_control_info_t *)channels_info->fan_control_info, 0);
+	}
+}
+
 void handle_channels_common_periodic_custom(channels_info_t *channels_info)
 {
 	handle_channels_led_state(channels_info);
+	handle_channels_fan_state(channels_info);
 }
 

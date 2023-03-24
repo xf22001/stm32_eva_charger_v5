@@ -1,12 +1,12 @@
 
 
 /*================================================================
- *   
- *   
+ *
+ *
  *   文件名称：power_manager_group_policy_config.c
  *   创 建 者：肖飞
  *   创建日期：2022年07月22日 星期五 12时30分44秒
- *   修改日期：2023年03月14日 星期二 14时39分00秒
+ *   修改日期：2023年03月24日 星期五 10时36分34秒
  *   描    述：
  *
  *================================================================*/
@@ -132,13 +132,13 @@ void power_manager_restore_config(channels_info_t *channels_info)
 	channels_settings->power_module_settings.rate_current = 21;
 	channels_settings->power_manager_settings.type = channels_config->power_manager_config.power_manager_default_type;
 	channels_settings->module_max_output_voltage = 10000;
-	channels_settings->module_min_output_voltage = 2000;
-	channels_settings->module_max_output_current = 1000;
+	channels_settings->module_min_output_voltage = 500;
+	channels_settings->module_max_output_current = 6670;
 	channels_settings->module_min_output_current = 3;
 	channels_settings->module_max_input_voltage = 0;//2530;
 	channels_settings->module_min_input_voltage = 0;//1870;
-	channels_settings->module_max_output_power = 30000;
-	channels_settings->channels_max_output_power = 300000;
+	channels_settings->module_max_output_power = 20000;
+	channels_settings->channels_max_output_power = 160000;
 	channels_settings->power_manager_group_policy = POWER_MANAGER_GROUP_POLICY_PRIORITY;
 
 	power_manager_settings->power_manager_group_number = 1;
@@ -164,3 +164,27 @@ void power_manager_restore_config(channels_info_t *channels_info)
 	}
 }
 
+void channel_info_reset_default_config(channel_info_t *channel_info)
+{
+	channel_config_t *channel_config = channel_info->channel_config;
+	channel_settings_t *channel_settings = &channel_info->channel_settings;
+
+	memset(channel_settings, 0, sizeof(channel_settings_t));
+
+	channel_settings->channel_type = channel_config->channel_type;
+	channel_settings->charger_settings.charger_type = channel_config->charger_config.charger_type;
+	channel_settings->energy_meter_settings.type = channel_config->energy_meter_config.default_type;
+	channel_settings->energy_meter_settings.request_addr = channel_config->energy_meter_config.request_addr;
+	channel_settings->energy_meter_settings.slot = channel_config->energy_meter_config.slot;
+	channel_settings->energy_meter_settings.energy_accuracy = channel_config->energy_meter_config.energy_accuracy;
+	channel_settings->energy_meter_settings.voltage_accuracy = channel_config->energy_meter_config.voltage_accuracy;
+	channel_settings->energy_meter_settings.curent_accuracy = channel_config->energy_meter_config.curent_accuracy;
+	channel_settings->function_board_type = channel_config->function_board_config.default_type;
+
+	channel_settings->max_output_power = 1600000;
+
+	channel_settings->max_output_voltage = 10000;
+	channel_settings->min_output_voltage = 500;
+	channel_settings->max_output_current = 2500;
+	channel_settings->min_output_current = 5;
+}
